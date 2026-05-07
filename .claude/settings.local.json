@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"\\\\.\\(xml|java\\)$\")"
+      "Bash(grep -E \"\\\\.\\(xml|java\\)$\")",
+      "Bash(./gradlew assembleDebug *)",
+      "Bash(bash *)"
     ]
   }
 }
