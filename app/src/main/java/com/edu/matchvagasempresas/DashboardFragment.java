@@ -28,18 +28,6 @@ public class DashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.btn_menu_vagas).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaVagas));
-
-        view.findViewById(R.id.btn_menu_nova_vaga).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_cadastroVaga));
-
-        view.findViewById(R.id.btn_menu_candidaturas).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaCandidaturas));
-
-        view.findViewById(R.id.btn_menu_perfil).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_perfil));
-
         view.findViewById(R.id.tv_ver_todas).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaVagas));
 

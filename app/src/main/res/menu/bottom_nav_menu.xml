@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/dashboardFragment"
+        android:icon="@drawable/ic_home"
+        android:title="Início" />
+    <item
+        android:id="@+id/listaVagasFragment"
+        android:icon="@drawable/ic_list"
+        android:title="Vagas" />
+    <item
+        android:id="@+id/listaCandidaturasFragment"
+        android:icon="@drawable/ic_people"
+        android:title="Candidaturas" />
+    <item
+        android:id="@+id/perfilEmpresaFragment"
+        android:icon="@drawable/ic_business"
+        android:title="Perfil" />
+</menu>
