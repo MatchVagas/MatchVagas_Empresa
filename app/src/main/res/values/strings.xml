@@ -1,0 +1,131 @@
+<resources>
+    <string name="app_name">Matchvagas Empresas</string>
+
+    <!-- Login -->
+    <string name="login_subtitle">Gerencie suas vagas e candidaturas</string>
+    <string name="hint_email">E-mail</string>
+    <string name="hint_senha">Senha</string>
+    <string name="esqueceu_senha">Esqueceu a senha?</string>
+    <string name="btn_entrar">Entrar</string>
+    <string name="nao_tem_conta">Não tem conta? </string>
+    <string name="cadastre_aqui">Cadastre-se aqui</string>
+
+    <!-- Cadastro Empresa -->
+    <string name="title_cadastro_empresa">Cadastro de Empresa</string>
+    <string name="label_dados_acesso">Dados de Acesso</string>
+    <string name="label_dados_empresa">Dados da Empresa</string>
+    <string name="hint_nome">Nome completo</string>
+    <string name="hint_confirmar_senha">Confirmar senha</string>
+    <string name="hint_cnpj">CNPJ</string>
+    <string name="hint_razao_social">Razão Social</string>
+    <string name="hint_nome_fantasia">Nome Fantasia</string>
+    <string name="hint_descricao_empresa">Descrição da empresa</string>
+    <string name="hint_porte">Porte da empresa</string>
+    <string name="hint_ramo_atuacao">Ramo de Atuação</string>
+    <string name="hint_site">Site (URL)</string>
+    <string name="hint_telefone">Telefone</string>
+    <string name="btn_cadastrar">Cadastrar</string>
+    <string name="ja_tem_conta">Já tem conta? </string>
+    <string name="fazer_login">Fazer login</string>
+
+    <!-- Dashboard -->
+    <string name="title_dashboard">Dashboard</string>
+    <string name="label_vagas_ativas">Vagas Ativas</string>
+    <string name="label_candidaturas_recebidas">Candidaturas</string>
+    <string name="label_vagas_expiradas">Expiradas</string>
+    <string name="menu_minhas_vagas">Minhas Vagas</string>
+    <string name="menu_nova_vaga">Nova Vaga</string>
+    <string name="menu_candidaturas">Candidaturas</string>
+    <string name="menu_perfil">Perfil</string>
+    <string name="btn_logout">Sair</string>
+    <string name="bem_vindo">Bem-vindo,</string>
+    <string name="vagas_recentes">Vagas Recentes</string>
+    <string name="ver_todas">Ver todas</string>
+    <string name="empresa_placeholder">Empresa XYZ Ltda.</string>
+    <string name="cnpj_placeholder">00.000.000/0001-00</string>
+
+    <!-- Vagas -->
+    <string name="title_lista_vagas">Minhas Vagas</string>
+    <string name="title_cadastro_vaga">Nova Vaga</string>
+    <string name="title_editar_vaga">Editar Vaga</string>
+    <string name="hint_titulo_vaga">Título da vaga</string>
+    <string name="hint_descricao_vaga">Descrição detalhada da vaga</string>
+    <string name="hint_requisitos">Requisitos e habilidades necessárias</string>
+    <string name="hint_tipo_vaga">Tipo de vaga</string>
+    <string name="hint_modalidade">Modalidade</string>
+    <string name="hint_salario_minimo">Salário mínimo (R$)</string>
+    <string name="hint_salario_maximo">Salário máximo (R$)</string>
+    <string name="hint_beneficios">Benefícios oferecidos</string>
+    <string name="hint_carga_horaria">Carga horária</string>
+    <string name="hint_idade_minima">Idade mínima</string>
+    <string name="hint_idade_maxima">Idade máxima</string>
+    <string name="hint_escolaridade">Escolaridade mínima</string>
+    <string name="hint_area_atuacao">Área de atuação</string>
+    <string name="hint_data_expiracao">Data de expiração</string>
+    <string name="hint_numero_vagas">Número de vagas</string>
+    <string name="hint_cidade">Cidade</string>
+    <string name="btn_publicar_vaga">Publicar Vaga</string>
+    <string name="btn_atualizar_vaga">Atualizar Vaga</string>
+    <string name="label_informacoes_basicas">Informações Básicas</string>
+    <string name="label_condicoes">Condições da Vaga</string>
+    <string name="label_requisitos_section">Requisitos</string>
+    <string name="label_local_periodo">Local e Período</string>
+    <string name="pesquisar_vagas">Pesquisar vagas…</string>
+    <string name="nenhuma_vaga">Nenhuma vaga encontrada</string>
+    <string name="menu_editar">Editar</string>
+    <string name="menu_gerenciar">Gerenciar</string>
+    <string name="menu_candidaturas_vaga">Ver candidaturas</string>
+
+    <!-- Candidaturas -->
+    <string name="title_lista_candidaturas">Candidaturas</string>
+    <string name="title_detalhes_candidatura">Detalhes da Candidatura</string>
+    <string name="filter_todas">Todas</string>
+    <string name="filter_pendente">Pendente</string>
+    <string name="filter_em_analise">Em Análise</string>
+    <string name="filter_aprovado">Aprovado</string>
+    <string name="filter_reprovado">Reprovado</string>
+    <string name="label_candidato">Candidato</string>
+    <string name="label_data_candidatura">Data da candidatura</string>
+    <string name="label_status_atual">Status atual</string>
+    <string name="label_alterar_status">Novo status</string>
+    <string name="btn_salvar_status">Salvar Status</string>
+    <string name="nenhuma_candidatura">Nenhuma candidatura encontrada</string>
+    <string name="label_vaga_ref">Vaga</string>
+    <string name="label_contato">Contato</string>
+    <string name="label_info_candidato">Informações do Candidato</string>
+
+    <!-- Gerenciar Vaga -->
+    <string name="title_gerenciar_vaga">Gerenciar Vaga</string>
+    <string name="label_status_vaga">Status da Vaga</string>
+    <string name="label_vaga_ativa">Vaga ativa</string>
+    <string name="label_programar_publicacao">Programar Publicação</string>
+    <string name="label_data_publicacao">Data de publicação</string>
+    <string name="label_hora_publicacao">Hora de publicação</string>
+    <string name="btn_salvar_programacao">Salvar Programação</string>
+    <string name="btn_deletar_vaga">Deletar Vaga</string>
+    <string name="confirm_deletar_titulo">Confirmar exclusão</string>
+    <string name="confirm_deletar_msg">Tem certeza que deseja deletar esta vaga? Esta ação não pode ser desfeita.</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_confirmar">Confirmar</string>
+    <string name="label_zona_perigo">Zona de Perigo</string>
+    <string name="label_desc_programar">Defina quando a vaga deve ser publicada automaticamente</string>
+    <string name="label_desc_status">Ativar ou desativar a visibilidade desta vaga</string>
+    <string name="label_desc_deletar">A vaga e todas as candidaturas serão permanentemente removidas.</string>
+
+    <!-- Perfil -->
+    <string name="title_perfil_empresa">Perfil da Empresa</string>
+    <string name="title_editar_perfil">Editar Perfil</string>
+    <string name="btn_editar_perfil">Editar Perfil</string>
+    <string name="btn_salvar_perfil">Salvar Alterações</string>
+    <string name="label_cnpj">CNPJ</string>
+    <string name="label_razao_social">Razão Social</string>
+    <string name="label_nome_fantasia">Nome Fantasia</string>
+    <string name="label_descricao">Descrição</string>
+    <string name="label_porte">Porte</string>
+    <string name="label_ramo">Ramo de Atuação</string>
+    <string name="label_site">Site</string>
+    <string name="label_telefone">Telefone</string>
+    <string name="label_alterar_foto">Alterar foto</string>
+    <string name="label_info_empresa">Informações da Empresa</string>
+    <string name="label_contato_empresa">Contato</string>
+</resources>
