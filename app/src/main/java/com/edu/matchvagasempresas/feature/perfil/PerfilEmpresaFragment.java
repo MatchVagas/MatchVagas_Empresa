@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.feature.perfil;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,18 +10,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.edu.matchvagasempresas.adapter.CandidaturasAdapter;
+import com.edu.matchvagasempresas.R;
 
-public class ListaCandidaturasFragment extends Fragment {
+public class PerfilEmpresaFragment extends Fragment {
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_lista_candidaturas, container, false);
+        return inflater.inflate(R.layout.activity_perfil_empresa, container, false);
     }
 
     @Override
@@ -32,9 +30,7 @@ public class ListaCandidaturasFragment extends Fragment {
         toolbar.setNavigationOnClickListener(v ->
                 Navigation.findNavController(v).navigateUp());
 
-        RecyclerView rv = view.findViewById(R.id.rv_candidaturas);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rv.setAdapter(new CandidaturasAdapter(requireContext(), position ->
-                Navigation.findNavController(view).navigate(R.id.action_listaCandidaturas_to_detalhes)));
+        view.findViewById(R.id.btn_editar_perfil).setOnClickListener(v ->
+                Navigation.findNavController(v).navigate(R.id.action_perfil_to_editarPerfil));
     }
 }

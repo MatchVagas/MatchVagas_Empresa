@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.feature.cadastro.vagas;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.edu.matchvagasempresas.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 

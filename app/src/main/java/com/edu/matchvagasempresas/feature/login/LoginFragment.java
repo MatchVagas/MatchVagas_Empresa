@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.feature.login;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+
+import com.edu.matchvagasempresas.R;
 
 public class LoginFragment extends Fragment {
 

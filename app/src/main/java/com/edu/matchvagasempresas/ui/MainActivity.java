@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.ui;
 
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +9,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
+import com.edu.matchvagasempresas.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Arrays;

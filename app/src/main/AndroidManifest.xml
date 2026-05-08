@@ -13,7 +13,7 @@
         android:theme="@style/Theme.MatchvagasEmpresas">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

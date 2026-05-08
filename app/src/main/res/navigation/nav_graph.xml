@@ -8,7 +8,7 @@
     <!-- Login -->
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.edu.matchvagasempresas.LoginFragment"
+        android:name="com.edu.matchvagasempresas.feature.login.LoginFragment"
         android:label="Login"
         tools:layout="@layout/activity_login">
 
@@ -26,7 +26,7 @@
     <!-- Cadastro Empresa -->
     <fragment
         android:id="@+id/cadastroEmpresaFragment"
-        android:name="com.edu.matchvagasempresas.CadastroEmpresaFragment"
+        android:name="com.edu.matchvagasempresas.feature.cadastro.empresa.CadastroEmpresaFragment"
         android:label="Cadastro de Empresa"
         tools:layout="@layout/activity_cadastro_empresa">
 
@@ -40,7 +40,7 @@
     <!-- Dashboard -->
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="com.edu.matchvagasempresas.DashboardFragment"
+        android:name="com.edu.matchvagasempresas.feature.dashboard.DashboardFragment"
         android:label="Dashboard"
         tools:layout="@layout/activity_dashboard">
 
@@ -70,7 +70,7 @@
     <!-- Lista de Vagas -->
     <fragment
         android:id="@+id/listaVagasFragment"
-        android:name="com.edu.matchvagasempresas.ListaVagasFragment"
+        android:name="com.edu.matchvagasempresas.feature.lista.vaga.ListaVagasFragment"
         android:label="Minhas Vagas"
         tools:layout="@layout/activity_lista_vagas">
 
@@ -94,21 +94,21 @@
     <!-- Cadastro de Vaga -->
     <fragment
         android:id="@+id/cadastroVagaFragment"
-        android:name="com.edu.matchvagasempresas.CadastroVagaFragment"
+        android:name="com.edu.matchvagasempresas.feature.cadastro.vagas.CadastroVagaFragment"
         android:label="Nova Vaga"
         tools:layout="@layout/activity_cadastro_vaga" />
 
     <!-- Editar Vaga -->
     <fragment
         android:id="@+id/editarVagaFragment"
-        android:name="com.edu.matchvagasempresas.EditarVagaFragment"
+        android:name="com.edu.matchvagasempresas.feature.editar.vaga.EditarVagaFragment"
         android:label="Editar Vaga"
         tools:layout="@layout/activity_editar_vaga" />
 
     <!-- Lista de Candidaturas -->
     <fragment
         android:id="@+id/listaCandidaturasFragment"
-        android:name="com.edu.matchvagasempresas.ListaCandidaturasFragment"
+        android:name="com.edu.matchvagasempresas.feature.lista.candidatura.ListaCandidaturasFragment"
         android:label="Candidaturas"
         tools:layout="@layout/activity_lista_candidaturas">
 
@@ -120,21 +120,21 @@
     <!-- Detalhes da Candidatura -->
     <fragment
         android:id="@+id/detalhesCandidaturaFragment"
-        android:name="com.edu.matchvagasempresas.DetalhesCandidaturaFragment"
+        android:name="com.edu.matchvagasempresas.feature.gerenciar.DetalhesCandidaturaFragment"
         android:label="Detalhes da Candidatura"
         tools:layout="@layout/activity_detalhes_candidatura" />
 
     <!-- Gerenciar Vaga -->
     <fragment
         android:id="@+id/gerenciarVagaFragment"
-        android:name="com.edu.matchvagasempresas.GerenciarVagaFragment"
+        android:name="com.edu.matchvagasempresas.feature.gerenciar.GerenciarVagaFragment"
         android:label="Gerenciar Vaga"
         tools:layout="@layout/activity_gerenciar_vaga" />
 
     <!-- Perfil da Empresa -->
     <fragment
         android:id="@+id/perfilEmpresaFragment"
-        android:name="com.edu.matchvagasempresas.PerfilEmpresaFragment"
+        android:name="com.edu.matchvagasempresas.feature.perfil.PerfilEmpresaFragment"
         android:label="Perfil da Empresa"
         tools:layout="@layout/activity_perfil_empresa">
 
@@ -146,7 +146,7 @@
     <!-- Editar Perfil -->
     <fragment
         android:id="@+id/editarPerfilEmpresaFragment"
-        android:name="com.edu.matchvagasempresas.EditarPerfilEmpresaFragment"
+        android:name="com.edu.matchvagasempresas.feature.editar.empresa.EditarPerfilEmpresaFragment"
         android:label="Editar Perfil"
         tools:layout="@layout/activity_editar_perfil_empresa" />
 

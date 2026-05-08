@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.feature.dashboard;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +13,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.VagasAdapter;
 
 public class DashboardFragment extends Fragment {

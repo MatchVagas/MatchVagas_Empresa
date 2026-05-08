@@ -3,7 +3,9 @@
     "allow": [
       "Bash(grep -E \"\\\\.\\(xml|java\\)$\")",
       "Bash(./gradlew assembleDebug *)",
-      "Bash(bash *)"
+      "Bash(bash *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\romario\\\\RomarioAndrade\\\\MatchVagas_Empresa\\\\app\\\\src\\\\main\\\\java\\\\com\\\\edu\\\\matchvagasempresas\" -Recurse -File)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }
