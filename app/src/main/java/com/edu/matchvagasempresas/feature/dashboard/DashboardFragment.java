@@ -1,4 +1,4 @@
-package com.edu.matchvagasempresas;
+package com.edu.matchvagasempresas.feature.dashboard;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +13,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.VagasAdapter;
 
 public class DashboardFragment extends Fragment {
@@ -27,18 +28,6 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        view.findViewById(R.id.btn_menu_vagas).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaVagas));
-
-        view.findViewById(R.id.btn_menu_nova_vaga).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_cadastroVaga));
-
-        view.findViewById(R.id.btn_menu_candidaturas).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaCandidaturas));
-
-        view.findViewById(R.id.btn_menu_perfil).setOnClickListener(v ->
-                Navigation.findNavController(v).navigate(R.id.action_dashboard_to_perfil));
 
         view.findViewById(R.id.tv_ver_todas).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaVagas));

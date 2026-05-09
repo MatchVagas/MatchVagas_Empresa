@@ -19,18 +19,50 @@
             app:title="@string/title_lista_candidaturas"
             app:navigationIcon="@drawable/ic_arrow_back" />
 
-        <!-- Subtítulo com nome da vaga -->
-        <TextView
-            android:id="@+id/tv_nome_vaga"
+        <!-- Vaga selecionada -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Desenvolvedor Android Sênior"
-            android:textSize="12sp"
-            android:textColor="#FFFFFFCC"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:paddingBottom="8dp"
-            android:background="@color/primary" />
+            android:paddingTop="4dp"
+            android:paddingBottom="12dp"
+            android:background="@color/primary">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_business"
+                android:tint="#FFFFFFCC"
+                android:layout_marginEnd="8dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="VAGA SELECIONADA"
+                    android:textSize="9sp"
+                    android:textColor="#FFFFFF99"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="2dp" />
+
+                <TextView
+                    android:id="@+id/tv_nome_vaga"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Desenvolvedor Android Sênior"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+        </LinearLayout>
 
         <!-- Filtros por status -->
         <HorizontalScrollView
