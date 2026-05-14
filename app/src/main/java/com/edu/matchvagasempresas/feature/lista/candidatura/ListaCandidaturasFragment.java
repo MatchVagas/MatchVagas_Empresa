@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,5 +38,8 @@ public class ListaCandidaturasFragment extends Fragment {
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(new CandidaturasAdapter(requireContext(), position ->
                 Navigation.findNavController(view).navigate(R.id.action_listaCandidaturas_to_detalhes)));
+
+        //TextView textView = view.findViewById(R.id.tv_titulo_vaga);
+        //textView.setText("Garoto de Programa");
     }
 }

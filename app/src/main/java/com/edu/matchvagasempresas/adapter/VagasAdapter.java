@@ -21,7 +21,7 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
     }
 
     private static final String[][] DADOS = {
-            {"Desenvolvedor Android Sênior", "TI", "CLT", "Remoto", "R$ 3.000 - R$ 6.000", "12", "30/06/2026", "Ativa"},
+            {"Garoto de Programa", "ComPutaria", "Autonomo", "Presencial", "R$ 25,00 - R$ 500,00", "12", "30/06/2026", "Ativa"},
             {"Designer UX/UI", "Design", "PJ", "Híbrido", "R$ 2.500 - R$ 5.000", "8", "15/07/2026", "Ativa"},
             {"Analista de Dados", "TI", "CLT", "Presencial", "R$ 4.000 - R$ 7.000", "5", "20/07/2026", "Ativa"},
             {"Gerente de Projetos", "Gestão", "CLT", "Híbrido", "R$ 6.000 - R$ 10.000", "3", "10/07/2026", "Inativa"},

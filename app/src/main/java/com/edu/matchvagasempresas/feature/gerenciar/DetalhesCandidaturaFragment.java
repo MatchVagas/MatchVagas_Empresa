@@ -62,6 +62,9 @@ public class DetalhesCandidaturaFragment extends Fragment {
 
         view.findViewById(R.id.btn_ver_curriculo).setOnClickListener(v ->
                 Snackbar.make(v, "Abrindo currículo em PDF…", Snackbar.LENGTH_SHORT).show());
+
+        TextView textView = view.findViewById(R.id.tv_titulo_vaga);
+        textView.setText("Garoto de Programa");
     }
 
     private void preencherPerfilCompartilhado(View view) {
