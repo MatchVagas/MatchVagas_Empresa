@@ -14,7 +14,7 @@ public class ApiClient {
 
     // Use 10.0.2.2 para acessar localhost do host a partir do emulador Android.
     // Para dispositivo físico, substitua pelo IP da máquina na mesma rede.
-    public static final String BASE_URL = "http://10.0.2.2:8080/";
+    public static final String BASE_URL = "https://backend-tgi8.onrender.com/";
 
     private static ApiService apiService;
 

@@ -93,7 +93,13 @@ public class CadastroVagaFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<List<LookupItem>> call,
                                    @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded() || !r.isSuccessful() || r.body() == null) return;
+                if (!isAdded()) return;
+                if (!r.isSuccessful() || r.body() == null) {
+                    Toast.makeText(requireContext(),
+                            "Erro ao carregar opções (código " + r.code() + ")",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 list.clear();
                 list.addAll(r.body());
                 List<String> labels = new ArrayList<>();
@@ -102,7 +108,12 @@ public class CadastroVagaFragment extends Fragment {
                         android.R.layout.simple_dropdown_item_1line, labels));
             }
             @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
+            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(),
+                        "Falha de conexão: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
         };
     }
 

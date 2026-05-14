@@ -74,7 +74,13 @@ public class CadastroEmpresaFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<List<LookupItem>> call,
                                    @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded() || !r.isSuccessful() || r.body() == null) return;
+                if (!isAdded()) return;
+                if (!r.isSuccessful() || r.body() == null) {
+                    Toast.makeText(requireContext(),
+                            "Erro ao carregar portes (código " + r.code() + ")",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 portes.clear();
                 portes.addAll(r.body());
                 List<String> labels = new ArrayList<>();
@@ -83,14 +89,24 @@ public class CadastroEmpresaFragment extends Fragment {
                         android.R.layout.simple_dropdown_item_1line, labels));
             }
             @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
+            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(),
+                        "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
 
         api.listarRamos().enqueue(new Callback<List<LookupItem>>() {
             @Override
             public void onResponse(@NonNull Call<List<LookupItem>> call,
                                    @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded() || !r.isSuccessful() || r.body() == null) return;
+                if (!isAdded()) return;
+                if (!r.isSuccessful() || r.body() == null) {
+                    Toast.makeText(requireContext(),
+                            "Erro ao carregar ramos (código " + r.code() + ")",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 ramos.clear();
                 ramos.addAll(r.body());
                 List<String> labels = new ArrayList<>();
@@ -99,7 +115,11 @@ public class CadastroEmpresaFragment extends Fragment {
                         android.R.layout.simple_dropdown_item_1line, labels));
             }
             @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
+            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(),
+                        "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
     }
 
