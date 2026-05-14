@@ -10,29 +10,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
+
+import java.util.List;
 
 public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapter.ViewHolder> {
 
     public interface OnCandidaturaClickListener {
-        void onCandidaturaClick(int position);
+        void onCandidaturaClick(long candidaturaId);
     }
 
-    private static final String[][] DADOS = {
-            {"Ana Beatriz Silva", "01/05/2026", "Pendente"},
-            {"Carlos Eduardo Santos", "30/04/2026", "Em Análise"},
-            {"Fernanda Lima Costa", "28/04/2026", "Aprovado"},
-            {"Roberto Oliveira", "27/04/2026", "Reprovado"},
-            {"Juliana Martins", "25/04/2026", "Pendente"},
-            {"Marcos Pereira", "24/04/2026", "Em Análise"},
-            {"Patricia Souza", "22/04/2026", "Pendente"},
-            {"Thiago Fernandes", "20/04/2026", "Aprovado"},
-    };
-
     private final Context context;
+    private final List<CandidaturaEmpresaResponse> candidaturas;
     private final OnCandidaturaClickListener listener;
 
-    public CandidaturasAdapter(Context context, OnCandidaturaClickListener listener) {
+    public CandidaturasAdapter(Context context, List<CandidaturaEmpresaResponse> candidaturas,
+                               OnCandidaturaClickListener listener) {
         this.context = context;
+        this.candidaturas = candidaturas;
         this.listener = listener;
     }
 
@@ -45,22 +40,32 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
-        String[] d = DADOS[position];
-        String[] partes = d[0].split(" ");
+        CandidaturaEmpresaResponse c = candidaturas.get(position);
+        String nome = c.nomeCandidato != null ? c.nomeCandidato : "Candidato";
+        String[] partes = nome.split(" ");
         String iniciais = partes.length >= 2
                 ? "" + partes[0].charAt(0) + partes[1].charAt(0)
-                : String.valueOf(d[0].charAt(0));
+                : String.valueOf(nome.charAt(0));
 
         h.tvIniciais.setText(iniciais.toUpperCase());
-        h.tvNome.setText(d[0]);
-        h.tvData.setText("Candidatou-se em " + d[1]);
-        h.tvStatus.setText(d[2]);
-        h.itemView.setOnClickListener(v -> listener.onCandidaturaClick(position));
+        h.tvNome.setText(nome);
+        h.tvData.setText("Candidatou-se em " + formatDate(c.dataCandidatura));
+        h.tvStatus.setText(c.status != null ? c.status : "");
+
+        long id = c.id != null ? c.id : -1;
+        h.itemView.setOnClickListener(view -> listener.onCandidaturaClick(id));
+    }
+
+    private String formatDate(String isoDate) {
+        if (isoDate == null || isoDate.length() < 10) return "";
+        String[] parts = isoDate.substring(0, 10).split("-");
+        if (parts.length == 3) return parts[2] + "/" + parts[1] + "/" + parts[0];
+        return isoDate;
     }
 
     @Override
     public int getItemCount() {
-        return DADOS.length;
+        return candidaturas != null ? candidaturas.size() : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

@@ -15,19 +15,28 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.model.EmpresaRequest;
+import com.edu.matchvagasempresas.model.EmpresaResponse;
+import com.edu.matchvagasempresas.model.LookupItem;
+import com.edu.matchvagasempresas.network.ApiClient;
+import com.edu.matchvagasempresas.network.ApiService;
+import com.edu.matchvagasempresas.util.SessionManager;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class EditarPerfilEmpresaFragment extends Fragment {
 
-    private static final String[] PORTES = {
-            "Microempresa (ME)", "Empresa de Pequeno Porte (EPP)",
-            "Médio Porte", "Grande Porte"
-    };
-    private static final String[] RAMOS = {
-            "Tecnologia da Informação", "Comércio", "Indústria",
-            "Saúde", "Educação", "Construção Civil", "Financeiro",
-            "Logística", "Alimentação", "Consultoria"
-    };
+    private final List<LookupItem> portes = new ArrayList<>();
+    private final List<LookupItem> ramos = new ArrayList<>();
+    private AutoCompleteTextView actvPorte, actvRamo;
+    private EmpresaResponse empresaAtual;
 
     @Nullable
     @Override
@@ -41,44 +50,169 @@ public class EditarPerfilEmpresaFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp());
+        toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(v).navigateUp());
 
-        setupDropdowns(view);
-        preencherDados(view);
+        actvPorte = view.findViewById(R.id.actv_porte);
+        actvRamo = view.findViewById(R.id.actv_ramo);
 
         view.findViewById(R.id.btn_alterar_foto).setOnClickListener(v ->
-                Toast.makeText(requireContext(), "Selecione uma imagem", Toast.LENGTH_SHORT).show());
+                Toast.makeText(requireContext(), "Funcionalidade em breve", Toast.LENGTH_SHORT).show());
 
-        view.findViewById(R.id.btn_salvar).setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Perfil atualizado com sucesso!", Toast.LENGTH_SHORT).show();
-            Navigation.findNavController(v).navigateUp();
+        view.findViewById(R.id.btn_salvar).setOnClickListener(v -> salvarPerfil(view, v));
+
+        carregarLookups(view);
+        carregarPerfil(view);
+    }
+
+    private void carregarLookups(View view) {
+        ApiService api = ApiClient.getService(requireContext());
+
+        api.listarPortes().enqueue(new Callback<List<LookupItem>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<LookupItem>> call,
+                                   @NonNull Response<List<LookupItem>> r) {
+                if (!isAdded() || !r.isSuccessful() || r.body() == null) return;
+                portes.clear();
+                portes.addAll(r.body());
+                List<String> labels = new ArrayList<>();
+                for (LookupItem item : portes) labels.add(item.getLabel());
+                actvPorte.setAdapter(new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, labels));
+                if (empresaAtual != null && empresaAtual.porte != null)
+                    actvPorte.setText(empresaAtual.porte, false);
+            }
+            @Override
+            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
+        });
+
+        api.listarRamos().enqueue(new Callback<List<LookupItem>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<LookupItem>> call,
+                                   @NonNull Response<List<LookupItem>> r) {
+                if (!isAdded() || !r.isSuccessful() || r.body() == null) return;
+                ramos.clear();
+                ramos.addAll(r.body());
+                List<String> labels = new ArrayList<>();
+                for (LookupItem item : ramos) labels.add(item.getLabel());
+                actvRamo.setAdapter(new ArrayAdapter<>(requireContext(),
+                        android.R.layout.simple_dropdown_item_1line, labels));
+                if (empresaAtual != null && empresaAtual.ramoAtuacao != null)
+                    actvRamo.setText(empresaAtual.ramoAtuacao, false);
+            }
+            @Override
+            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
         });
     }
 
-    private void setupDropdowns(View view) {
-        ((AutoCompleteTextView) view.findViewById(R.id.actv_porte))
-                .setAdapter(new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, PORTES));
-        ((AutoCompleteTextView) view.findViewById(R.id.actv_ramo))
-                .setAdapter(new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, RAMOS));
+    private void carregarPerfil(View view) {
+        ApiClient.getService(requireContext()).minhaEmpresa().enqueue(new Callback<EmpresaResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<EmpresaResponse> call,
+                                   @NonNull Response<EmpresaResponse> r) {
+                if (!isAdded()) return;
+                if (r.isSuccessful() && r.body() != null) {
+                    empresaAtual = r.body();
+                    preencherFormulario(view, empresaAtual);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<EmpresaResponse> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Erro ao carregar perfil", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void preencherDados(View view) {
-        ((TextInputEditText) view.findViewById(R.id.et_cnpj))
-                .setText("00.000.000/0001-00");
-        ((TextInputEditText) view.findViewById(R.id.et_razao_social))
-                .setText("Empresa XYZ Soluções Tecnológicas Ltda.");
-        ((TextInputEditText) view.findViewById(R.id.et_nome_fantasia))
-                .setText("Empresa XYZ");
-        ((AutoCompleteTextView) view.findViewById(R.id.actv_porte))
-                .setText("Médio Porte", false);
-        ((AutoCompleteTextView) view.findViewById(R.id.actv_ramo))
-                .setText("Tecnologia da Informação", false);
-        ((TextInputEditText) view.findViewById(R.id.et_site))
-                .setText("https://www.empresaxyz.com.br");
-        ((TextInputEditText) view.findViewById(R.id.et_telefone))
-                .setText("(11) 3000-0000");
+    private void preencherFormulario(View view, EmpresaResponse e) {
+        setEditText(view, R.id.et_cnpj, e.cnpj);
+        setEditText(view, R.id.et_razao_social, e.razaoSocial);
+        setEditText(view, R.id.et_nome_fantasia, e.nomeFantasia);
+        setEditText(view, R.id.et_site, e.site);
+        if (e.porte != null) actvPorte.setText(e.porte, false);
+        if (e.ramoAtuacao != null) actvRamo.setText(e.ramoAtuacao, false);
+    }
+
+    private void salvarPerfil(View view, View btn) {
+        if (empresaAtual == null) {
+            Toast.makeText(requireContext(), "Dados não carregados", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String cnpj = getText(view, R.id.et_cnpj);
+        String razaoSocial = getText(view, R.id.et_razao_social);
+        String nomeFantasia = getText(view, R.id.et_nome_fantasia);
+        String site = getText(view, R.id.et_site);
+
+        Long porteId = getSelectedId(portes, actvPorte.getText().toString());
+        Long ramoId = getSelectedId(ramos, actvRamo.getText().toString());
+
+        // fallback: se o dropdown ainda está com o valor atual da empresa, busca por descrição
+        if (porteId == null && empresaAtual.porte != null)
+            porteId = getSelectedId(portes, empresaAtual.porte);
+        if (ramoId == null && empresaAtual.ramoAtuacao != null)
+            ramoId = getSelectedId(ramos, empresaAtual.ramoAtuacao);
+
+        if (porteId == null || ramoId == null) {
+            Toast.makeText(requireContext(), "Selecione porte e ramo de atuação", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Long empresaId = new SessionManager(requireContext()).getEmpresaId();
+        if (empresaId == null) empresaId = empresaAtual.id;
+
+        EmpresaRequest req = new EmpresaRequest(
+                cnpj.isEmpty() ? empresaAtual.cnpj : cnpj,
+                razaoSocial.isEmpty() ? empresaAtual.razaoSocial : razaoSocial,
+                nomeFantasia.isEmpty() ? empresaAtual.nomeFantasia : nomeFantasia,
+                empresaAtual.descricao,
+                porteId, ramoId,
+                site.isEmpty() ? empresaAtual.site : site
+        );
+
+        final Long finalEmpresaId = empresaId;
+        ((MaterialButton) btn).setEnabled(false);
+        ApiClient.getService(requireContext())
+                .atualizarEmpresa(finalEmpresaId, req)
+                .enqueue(new Callback<EmpresaResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<EmpresaResponse> call,
+                                           @NonNull Response<EmpresaResponse> r) {
+                        if (!isAdded()) return;
+                        ((MaterialButton) btn).setEnabled(true);
+                        if (r.isSuccessful() && r.body() != null) {
+                            new SessionManager(requireContext())
+                                    .saveEmpresa(r.body().id, r.body().nomeFantasia);
+                            Toast.makeText(requireContext(), "Perfil atualizado!", Toast.LENGTH_SHORT).show();
+                            Navigation.findNavController(btn).navigateUp();
+                        } else {
+                            Toast.makeText(requireContext(), "Erro ao salvar", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<EmpresaResponse> call, @NonNull Throwable t) {
+                        if (!isAdded()) return;
+                        ((MaterialButton) btn).setEnabled(true);
+                        Toast.makeText(requireContext(), "Erro de conexão", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void setEditText(View root, int id, String value) {
+        TextInputEditText et = root.findViewById(id);
+        if (et != null && value != null) et.setText(value);
+    }
+
+    private String getText(View root, int id) {
+        TextInputEditText et = root.findViewById(id);
+        return et != null && et.getText() != null ? et.getText().toString().trim() : "";
+    }
+
+    private Long getSelectedId(List<LookupItem> list, String label) {
+        for (LookupItem item : list) {
+            if (item.getLabel().equals(label)) return item.id;
+        }
+        return null;
     }
 }

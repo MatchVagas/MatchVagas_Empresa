@@ -10,32 +10,26 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.model.VagaResponse;
+
+import java.util.List;
 
 public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> {
 
     public interface OnVagaActionListener {
-        void onVagaClick(int position);
-        void onCandidaturasClick(int position);
-        void onEditarClick(int position);
-        void onGerenciarClick(int position);
+        void onVagaClick(long vagaId);
+        void onCandidaturasClick(long vagaId);
+        void onEditarClick(long vagaId);
+        void onGerenciarClick(long vagaId);
     }
 
-    private static final String[][] DADOS = {
-            {"Garoto de Programa", "ComPutaria", "Autonomo", "Presencial", "R$ 25,00 - R$ 500,00", "12", "30/06/2026", "Ativa"},
-            {"Designer UX/UI", "Design", "PJ", "Híbrido", "R$ 2.500 - R$ 5.000", "8", "15/07/2026", "Ativa"},
-            {"Analista de Dados", "TI", "CLT", "Presencial", "R$ 4.000 - R$ 7.000", "5", "20/07/2026", "Ativa"},
-            {"Gerente de Projetos", "Gestão", "CLT", "Híbrido", "R$ 6.000 - R$ 10.000", "3", "10/07/2026", "Inativa"},
-            {"Engenheiro de Software", "TI", "CLT", "Remoto", "R$ 8.000 - R$ 14.000", "20", "25/06/2026", "Ativa"},
-            {"Suporte Técnico N2", "TI", "CLT", "Presencial", "R$ 1.800 - R$ 2.500", "15", "05/06/2026", "Expirada"},
-    };
-
     private final Context context;
-    private final int itemCount;
+    private final List<VagaResponse> vagas;
     private final OnVagaActionListener listener;
 
-    public VagasAdapter(Context context, int itemCount, OnVagaActionListener listener) {
+    public VagasAdapter(Context context, List<VagaResponse> vagas, OnVagaActionListener listener) {
         this.context = context;
-        this.itemCount = Math.min(itemCount, DADOS.length);
+        this.vagas = vagas;
         this.listener = listener;
     }
 
@@ -48,25 +42,38 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
-        String[] d = DADOS[position];
-        h.tvTitulo.setText(d[0]);
-        h.tvArea.setText(d[1]);
-        h.tvTipo.setText(d[2]);
-        h.tvModalidade.setText(d[3]);
-        h.tvSalario.setText(d[4]);
-        h.tvCandidaturas.setText(d[5] + " candidaturas");
-        h.tvDataExpiracao.setText("Expira: " + d[6]);
-        h.tvStatus.setText(d[7]);
+        VagaResponse v = vagas.get(position);
+        h.tvTitulo.setText(v.titulo);
+        h.tvArea.setText(v.areaAtuacao != null ? v.areaAtuacao : "");
+        h.tvTipo.setText(v.tipoVagaDescricao != null ? v.tipoVagaDescricao : "");
+        h.tvModalidade.setText(v.modalidadeDescricao != null ? v.modalidadeDescricao : "");
 
-        h.itemView.setOnClickListener(v -> listener.onVagaClick(position));
-        h.btnCandidaturas.setOnClickListener(v -> listener.onCandidaturasClick(position));
-        h.btnEditar.setOnClickListener(v -> listener.onEditarClick(position));
-        h.btnGerenciar.setOnClickListener(v -> listener.onGerenciarClick(position));
+        String salario = "";
+        if (v.salarioMinimo != null && v.salarioMaximo != null) {
+            salario = String.format("R$ %.0f - R$ %.0f", v.salarioMinimo, v.salarioMaximo);
+        }
+        h.tvSalario.setText(salario);
+        h.tvDataExpiracao.setText(v.dataExpiracao != null ? "Expira: " + formatDate(v.dataExpiracao) : "");
+        h.tvStatus.setText(v.statusDescricao != null ? v.statusDescricao : "");
+        h.tvCandidaturas.setText("candidaturas");
+
+        long id = v.id != null ? v.id : -1;
+        h.itemView.setOnClickListener(view -> listener.onVagaClick(id));
+        h.btnCandidaturas.setOnClickListener(view -> listener.onCandidaturasClick(id));
+        h.btnEditar.setOnClickListener(view -> listener.onEditarClick(id));
+        h.btnGerenciar.setOnClickListener(view -> listener.onGerenciarClick(id));
+    }
+
+    private String formatDate(String isoDate) {
+        if (isoDate == null || isoDate.length() < 10) return isoDate;
+        String[] parts = isoDate.substring(0, 10).split("-");
+        if (parts.length == 3) return parts[2] + "/" + parts[1] + "/" + parts[0];
+        return isoDate;
     }
 
     @Override
     public int getItemCount() {
-        return itemCount;
+        return vagas != null ? vagas.size() : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
