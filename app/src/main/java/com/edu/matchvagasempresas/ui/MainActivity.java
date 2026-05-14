@@ -10,6 +10,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.network.LookupCache;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Arrays;
@@ -23,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         setContentView(R.layout.activity_main);
+
+        LookupCache.get().preload(this, null);
 
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment);

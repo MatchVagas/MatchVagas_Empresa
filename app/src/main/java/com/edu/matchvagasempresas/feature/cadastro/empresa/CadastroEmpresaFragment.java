@@ -22,6 +22,7 @@ import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.LookupItem;
 import com.edu.matchvagasempresas.network.ApiClient;
 import com.edu.matchvagasempresas.network.ApiService;
+import com.edu.matchvagasempresas.network.LookupCache;
 import com.edu.matchvagasempresas.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,10 +37,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 public class CadastroEmpresaFragment extends Fragment {
 
-    private final List<LookupItem> portes = new ArrayList<>();
-    private final List<LookupItem> ramos = new ArrayList<>();
     private AutoCompleteTextView actvPorte, actvRamo;
 
     @Nullable
@@ -68,59 +68,18 @@ public class CadastroEmpresaFragment extends Fragment {
     }
 
     private void carregarLookups() {
-        ApiService api = ApiClient.getService(requireContext());
-
-        api.listarPortes().enqueue(new Callback<List<LookupItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<LookupItem>> call,
-                                   @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded()) return;
-                if (!r.isSuccessful() || r.body() == null) {
-                    Toast.makeText(requireContext(),
-                            "Erro ao carregar portes (código " + r.code() + ")",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                portes.clear();
-                portes.addAll(r.body());
-                List<String> labels = new ArrayList<>();
-                for (LookupItem item : portes) labels.add(item.getLabel());
-                actvPorte.setAdapter(new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, labels));
-            }
-            @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(),
-                        "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
+        LookupCache.get().preload(requireContext(), () -> {
+            if (!isAdded()) return;
+            bindDropdown(actvPorte, LookupCache.get().getPortes());
+            bindDropdown(actvRamo, LookupCache.get().getRamos());
         });
+    }
 
-        api.listarRamos().enqueue(new Callback<List<LookupItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<LookupItem>> call,
-                                   @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded()) return;
-                if (!r.isSuccessful() || r.body() == null) {
-                    Toast.makeText(requireContext(),
-                            "Erro ao carregar ramos (código " + r.code() + ")",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                ramos.clear();
-                ramos.addAll(r.body());
-                List<String> labels = new ArrayList<>();
-                for (LookupItem item : ramos) labels.add(item.getLabel());
-                actvRamo.setAdapter(new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, labels));
-            }
-            @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(),
-                        "Falha de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+    private void bindDropdown(AutoCompleteTextView actv, List<LookupItem> items) {
+        List<String> labels = new ArrayList<>();
+        for (LookupItem item : items) labels.add(item.getLabel());
+        actv.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, labels));
     }
 
     private void cadastrar(View view, View btn) {
@@ -148,8 +107,8 @@ public class CadastroEmpresaFragment extends Fragment {
             return;
         }
 
-        Long porteId = getSelectedId(portes, actvPorte.getText().toString());
-        Long ramoId = getSelectedId(ramos, actvRamo.getText().toString());
+        Long porteId = getSelectedId(LookupCache.get().getPortes(), actvPorte.getText().toString());
+        Long ramoId = getSelectedId(LookupCache.get().getRamos(), actvRamo.getText().toString());
 
         if (porteId == null || ramoId == null) {
             Toast.makeText(requireContext(), "Selecione porte e ramo de atuação", Toast.LENGTH_SHORT).show();

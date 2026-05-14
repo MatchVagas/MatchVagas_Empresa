@@ -20,7 +20,7 @@ import com.edu.matchvagasempresas.model.LookupItem;
 import com.edu.matchvagasempresas.model.VagaRequest;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
-import com.edu.matchvagasempresas.network.ApiService;
+import com.edu.matchvagasempresas.network.LookupCache;
 import com.edu.matchvagasempresas.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -36,12 +36,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CadastroVagaFragment extends Fragment {
-
-    private final List<LookupItem> tiposVaga = new ArrayList<>();
-    private final List<LookupItem> modalidades = new ArrayList<>();
-    private final List<LookupItem> escolaridades = new ArrayList<>();
-    private final List<LookupItem> cidades = new ArrayList<>();
-    private final List<LookupItem> statusVaga = new ArrayList<>();
 
     private AutoCompleteTextView actvTipo, actvModalidade, actvEscolaridade, actvCidade;
 
@@ -71,50 +65,20 @@ public class CadastroVagaFragment extends Fragment {
     }
 
     private void carregarLookups() {
-        ApiService api = ApiClient.getService(requireContext());
-
-        api.listarTiposVaga().enqueue(callback(tiposVaga, actvTipo));
-        api.listarModalidades().enqueue(callback(modalidades, actvModalidade));
-        api.listarEscolaridades().enqueue(callback(escolaridades, actvEscolaridade));
-        api.listarCidades().enqueue(callback(cidades, actvCidade));
-        api.listarStatusVaga().enqueue(new Callback<List<LookupItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<LookupItem>> call,
-                                   @NonNull Response<List<LookupItem>> r) {
-                if (r.isSuccessful() && r.body() != null) statusVaga.addAll(r.body());
-            }
-            @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) { }
+        LookupCache.get().preload(requireContext(), () -> {
+            if (!isAdded()) return;
+            bindDropdown(actvTipo, LookupCache.get().getTiposVaga());
+            bindDropdown(actvModalidade, LookupCache.get().getModalidades());
+            bindDropdown(actvEscolaridade, LookupCache.get().getEscolaridades());
+            bindDropdown(actvCidade, LookupCache.get().getCidades());
         });
     }
 
-    private Callback<List<LookupItem>> callback(List<LookupItem> list, AutoCompleteTextView actv) {
-        return new Callback<List<LookupItem>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<LookupItem>> call,
-                                   @NonNull Response<List<LookupItem>> r) {
-                if (!isAdded()) return;
-                if (!r.isSuccessful() || r.body() == null) {
-                    Toast.makeText(requireContext(),
-                            "Erro ao carregar opções (código " + r.code() + ")",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                list.clear();
-                list.addAll(r.body());
-                List<String> labels = new ArrayList<>();
-                for (LookupItem item : list) labels.add(item.getLabel());
-                actv.setAdapter(new ArrayAdapter<>(requireContext(),
-                        android.R.layout.simple_dropdown_item_1line, labels));
-            }
-            @Override
-            public void onFailure(@NonNull Call<List<LookupItem>> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(),
-                        "Falha de conexão: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
-            }
-        };
+    private void bindDropdown(AutoCompleteTextView actv, List<LookupItem> items) {
+        List<String> labels = new ArrayList<>();
+        for (LookupItem item : items) labels.add(item.getLabel());
+        actv.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, labels));
     }
 
     private void publicarVaga(View view, View btn) {
@@ -139,10 +103,10 @@ public class CadastroVagaFragment extends Fragment {
             return;
         }
 
-        Long tipoId = getSelectedId(tiposVaga, actvTipo.getText().toString());
-        Long modalId = getSelectedId(modalidades, actvModalidade.getText().toString());
-        Long escolId = getSelectedId(escolaridades, actvEscolaridade.getText().toString());
-        Long cidadeId = getSelectedId(cidades, actvCidade.getText().toString());
+        Long tipoId = getSelectedId(LookupCache.get().getTiposVaga(), actvTipo.getText().toString());
+        Long modalId = getSelectedId(LookupCache.get().getModalidades(), actvModalidade.getText().toString());
+        Long escolId = getSelectedId(LookupCache.get().getEscolaridades(), actvEscolaridade.getText().toString());
+        Long cidadeId = getSelectedId(LookupCache.get().getCidades(), actvCidade.getText().toString());
 
         if (tipoId == null || modalId == null || escolId == null || cidadeId == null) {
             Toast.makeText(requireContext(), "Selecione tipo, modalidade, escolaridade e cidade",
@@ -150,6 +114,7 @@ public class CadastroVagaFragment extends Fragment {
             return;
         }
 
+        List<LookupItem> statusVaga = LookupCache.get().getStatusVaga();
         Long statusId = statusVaga.isEmpty() ? null : statusVaga.get(0).id;
         SessionManager session = new SessionManager(requireContext());
         Long empresaId = session.getEmpresaId();
