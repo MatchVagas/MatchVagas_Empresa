@@ -1,6 +1,8 @@
 package com.edu.matchvagasempresas.feature.editar.empresa;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +60,7 @@ public class EditarPerfilEmpresaFragment extends Fragment {
 
         view.findViewById(R.id.btn_salvar).setOnClickListener(v -> salvarPerfil(view, v));
 
+        setupTelefoneMask(view.findViewById(R.id.et_telefone));
         carregarLookups(view);
         carregarPerfil(view);
     }
@@ -102,11 +105,14 @@ public class EditarPerfilEmpresaFragment extends Fragment {
     }
 
     private void preencherFormulario(View view, EmpresaResponse e) {
-        setEditText(view, R.id.et_cnpj, e.cnpj);
-        setEditText(view, R.id.et_razao_social, e.razaoSocial);
+        setEditText(view, R.id.et_cnpj,          e.cnpj);
+        setEditText(view, R.id.et_razao_social,  e.razaoSocial);
         setEditText(view, R.id.et_nome_fantasia, e.nomeFantasia);
-        setEditText(view, R.id.et_site, e.site);
-        if (e.porte != null) actvPorte.setText(e.porte, false);
+        setEditText(view, R.id.et_descricao,     e.descricao);
+        setEditText(view, R.id.et_site,          e.site);
+        if (e.telefone != null && e.telefone.numero != null)
+            setEditText(view, R.id.et_telefone, aplicarMascaraTelefone(e.telefone.numero));
+        if (e.porte != null)       actvPorte.setText(e.porte, false);
         if (e.ramoAtuacao != null) actvRamo.setText(e.ramoAtuacao, false);
     }
 
@@ -116,15 +122,16 @@ public class EditarPerfilEmpresaFragment extends Fragment {
             return;
         }
 
-        String cnpj = getText(view, R.id.et_cnpj);
-        String razaoSocial = getText(view, R.id.et_razao_social);
+        String cnpj        = getText(view, R.id.et_cnpj);
+        String razaoSocial  = getText(view, R.id.et_razao_social);
         String nomeFantasia = getText(view, R.id.et_nome_fantasia);
-        String site = getText(view, R.id.et_site);
+        String descricao    = getText(view, R.id.et_descricao);
+        String site         = getText(view, R.id.et_site);
+        String telefoneNum  = getText(view, R.id.et_telefone);
 
         Long porteId = getSelectedId(LookupCache.get().getPortes(), actvPorte.getText().toString());
-        Long ramoId = getSelectedId(LookupCache.get().getRamos(), actvRamo.getText().toString());
+        Long ramoId  = getSelectedId(LookupCache.get().getRamos(),  actvRamo.getText().toString());
 
-        // fallback: se o dropdown ainda está com o valor atual da empresa, busca por descrição
         if (porteId == null && empresaAtual.porte != null)
             porteId = getSelectedId(LookupCache.get().getPortes(), empresaAtual.porte);
         if (ramoId == null && empresaAtual.ramoAtuacao != null)
@@ -139,13 +146,21 @@ public class EditarPerfilEmpresaFragment extends Fragment {
         if (empresaId == null) empresaId = empresaAtual.id;
 
         EmpresaRequest req = new EmpresaRequest(
-                cnpj.isEmpty() ? empresaAtual.cnpj : cnpj,
+                cnpj.isEmpty()        ? empresaAtual.cnpj        : cnpj,
                 razaoSocial.isEmpty() ? empresaAtual.razaoSocial : razaoSocial,
-                nomeFantasia.isEmpty() ? empresaAtual.nomeFantasia : nomeFantasia,
-                empresaAtual.descricao,
+                nomeFantasia.isEmpty()? empresaAtual.nomeFantasia : nomeFantasia,
+                descricao.isEmpty()   ? empresaAtual.descricao   : descricao,
                 porteId, ramoId,
-                site.isEmpty() ? empresaAtual.site : site
+                site.isEmpty()        ? empresaAtual.site         : site
         );
+
+        // Telefone: usa o número editado; mantém tipoTelefoneId existente ou padrão Celular (1)
+        if (!telefoneNum.isEmpty()) {
+            Long tipoId = (empresaAtual.telefone != null && empresaAtual.telefone.tipoTelefoneId != null)
+                    ? empresaAtual.telefone.tipoTelefoneId : 1L;
+            boolean wpp = empresaAtual.telefone != null && empresaAtual.telefone.wpp;
+            req.telefone = new EmpresaRequest.Telefone(telefoneNum, tipoId, wpp);
+        }
 
         final Long finalEmpresaId = empresaId;
         ((MaterialButton) btn).setEnabled(false);
@@ -159,7 +174,7 @@ public class EditarPerfilEmpresaFragment extends Fragment {
                         ((MaterialButton) btn).setEnabled(true);
                         if (r.isSuccessful() && r.body() != null) {
                             new SessionManager(requireContext())
-                                    .saveEmpresa(r.body().id, r.body().nomeFantasia);
+                                    .saveEmpresa(r.body().id, r.body().nomeFantasia, r.body().status);
                             Toast.makeText(requireContext(), "Perfil atualizado!", Toast.LENGTH_SHORT).show();
                             Navigation.findNavController(btn).navigateUp();
                         } else {
@@ -191,5 +206,39 @@ public class EditarPerfilEmpresaFragment extends Fragment {
             if (item.getLabel().equals(label)) return item.id;
         }
         return null;
+    }
+
+    private void setupTelefoneMask(TextInputEditText et) {
+        if (et == null) return;
+        et.addTextChangedListener(new TextWatcher() {
+            private boolean updating = false;
+
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (updating) return;
+                updating = true;
+                String masked = aplicarMascaraTelefone(s.toString());
+                s.replace(0, s.length(), masked);
+                updating = false;
+            }
+        });
+    }
+
+    // Formata para (XX) XXXX-XXXX (fixo) ou (XX) XXXXX-XXXX (celular)
+    private String aplicarMascaraTelefone(String input) {
+        String digits = input.replaceAll("[^0-9]", "");
+        if (digits.length() > 11) digits = digits.substring(0, 11);
+
+        String mask = digits.length() <= 10 ? "(##) ####-####" : "(##) #####-####";
+        StringBuilder out = new StringBuilder();
+        int d = 0;
+        for (int m = 0; m < mask.length() && d < digits.length(); m++) {
+            if (mask.charAt(m) == '#') out.append(digits.charAt(d++));
+            else                       out.append(mask.charAt(m));
+        }
+        return out.toString();
     }
 }

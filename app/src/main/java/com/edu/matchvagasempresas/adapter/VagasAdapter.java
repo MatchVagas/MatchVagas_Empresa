@@ -57,6 +57,20 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
         h.tvStatus.setText(v.statusDescricao != null ? v.statusDescricao : "");
         h.tvCandidaturas.setText("candidaturas");
 
+        if (v.idadeMinima != null || v.idadeMaxima != null) {
+            String idade;
+            if (v.idadeMinima != null && v.idadeMaxima != null)
+                idade = "Idade: " + v.idadeMinima + " - " + v.idadeMaxima + " anos";
+            else if (v.idadeMinima != null)
+                idade = "Idade mínima: " + v.idadeMinima + " anos";
+            else
+                idade = "Idade máxima: " + v.idadeMaxima + " anos";
+            h.tvIdade.setText(idade);
+            h.tvIdade.setVisibility(View.VISIBLE);
+        } else {
+            h.tvIdade.setVisibility(View.GONE);
+        }
+
         long id = v.id != null ? v.id : -1;
         h.itemView.setOnClickListener(view -> listener.onVagaClick(id));
         h.btnCandidaturas.setOnClickListener(view -> listener.onCandidaturasClick(id));
@@ -78,22 +92,23 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitulo, tvArea, tvTipo, tvModalidade, tvSalario;
-        TextView tvCandidaturas, tvDataExpiracao, tvStatus;
+        TextView tvIdade, tvCandidaturas, tvDataExpiracao, tvStatus;
         View btnCandidaturas, btnEditar, btnGerenciar;
 
         ViewHolder(View view) {
             super(view);
-            tvTitulo = view.findViewById(R.id.tv_titulo);
-            tvArea = view.findViewById(R.id.tv_area);
-            tvTipo = view.findViewById(R.id.tv_tipo);
-            tvModalidade = view.findViewById(R.id.tv_modalidade);
-            tvSalario = view.findViewById(R.id.tv_salario);
+            tvTitulo       = view.findViewById(R.id.tv_titulo);
+            tvArea         = view.findViewById(R.id.tv_area);
+            tvTipo         = view.findViewById(R.id.tv_tipo);
+            tvModalidade   = view.findViewById(R.id.tv_modalidade);
+            tvSalario      = view.findViewById(R.id.tv_salario);
+            tvIdade        = view.findViewById(R.id.tv_idade);
             tvCandidaturas = view.findViewById(R.id.tv_candidaturas);
             tvDataExpiracao = view.findViewById(R.id.tv_data_expiracao);
-            tvStatus = view.findViewById(R.id.tv_status);
+            tvStatus       = view.findViewById(R.id.tv_status);
             btnCandidaturas = view.findViewById(R.id.btn_candidaturas);
-            btnEditar = view.findViewById(R.id.btn_editar);
-            btnGerenciar = view.findViewById(R.id.btn_gerenciar);
+            btnEditar      = view.findViewById(R.id.btn_editar);
+            btnGerenciar   = view.findViewById(R.id.btn_gerenciar);
         }
     }
 }

@@ -64,12 +64,30 @@ public class PerfilEmpresaFragment extends Fragment {
 
     private void preencherDados(View view, EmpresaResponse e) {
         setText(view, R.id.tv_nome_fantasia, e.nomeFantasia);
-        setText(view, R.id.tv_ramo_atuacao, e.ramoAtuacao);
-        setText(view, R.id.tv_cnpj, e.cnpj);
-        setText(view, R.id.tv_razao_social, e.razaoSocial);
-        setText(view, R.id.tv_porte, e.porte);
-        setText(view, R.id.tv_descricao, e.descricao);
-        setText(view, R.id.tv_site, e.site);
+        setText(view, R.id.tv_ramo_atuacao,  e.ramoAtuacao);
+        setText(view, R.id.tv_cnpj,          e.cnpj);
+        setText(view, R.id.tv_razao_social,  e.razaoSocial);
+        setText(view, R.id.tv_porte,         e.porte);
+        setText(view, R.id.tv_descricao,     e.descricao);
+        setText(view, R.id.tv_site,          e.site);
+        String telefone = (e.telefone != null && e.telefone.numero != null)
+                ? formatarTelefone(e.telefone.numero) : "";
+        setText(view, R.id.tv_telefone, telefone);
+    }
+
+    private String formatarTelefone(String numero) {
+        String digits = numero.replaceAll("[^0-9]", "");
+        if (digits.length() == 11)
+            return String.format("(%s) %s-%s",
+                    digits.substring(0, 2),
+                    digits.substring(2, 7),
+                    digits.substring(7));
+        if (digits.length() == 10)
+            return String.format("(%s) %s-%s",
+                    digits.substring(0, 2),
+                    digits.substring(2, 6),
+                    digits.substring(6));
+        return numero; // retorna como veio se formato desconhecido
     }
 
     private void setText(View root, int id, String value) {

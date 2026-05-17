@@ -97,7 +97,7 @@ public class LoginFragment extends Fragment {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     EmpresaResponse emp = response.body();
-                    new SessionManager(requireContext()).saveEmpresa(emp.id, emp.nomeFantasia);
+                    new SessionManager(requireContext()).saveEmpresa(emp.id, emp.nomeFantasia, emp.status);
                 }
                 Navigation.findNavController(anchor).navigate(R.id.action_login_to_dashboard);
             }

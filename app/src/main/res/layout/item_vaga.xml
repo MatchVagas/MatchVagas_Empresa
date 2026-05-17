@@ -108,6 +108,16 @@
             android:textSize="13sp"
             android:textStyle="bold" />
 
+        <!-- Linha: Faixa etária (visível só quando informada) -->
+        <TextView
+            android:id="@+id/tv_idade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
         <!-- Linha: Candidaturas + Data -->
         <LinearLayout
             android:layout_width="match_parent"

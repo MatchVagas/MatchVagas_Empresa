@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,11 +20,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.CandidaturasAdapter;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
 import com.edu.matchvagasempresas.network.ApiService;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,7 +37,11 @@ import retrofit2.Response;
 public class ListaCandidaturasFragment extends Fragment {
 
     private CandidaturasAdapter adapter;
-    private final List<CandidaturaEmpresaResponse> candidaturas = new ArrayList<>();
+    private final List<CandidaturaEmpresaResponse> todas = new ArrayList<>();
+    private final List<CandidaturaEmpresaResponse> exibidas = new ArrayList<>();
+    private final List<VagaResponse> vagas = new ArrayList<>();
+    private TextView tvNenhuma;
+    private long vagaIdFixo = -1;
 
     @Nullable
     @Override
@@ -46,43 +57,157 @@ public class ListaCandidaturasFragment extends Fragment {
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(v).navigateUp());
 
+        tvNenhuma = view.findViewById(R.id.tv_nenhuma_candidatura);
+
         RecyclerView rv = view.findViewById(R.id.rv_candidaturas);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new CandidaturasAdapter(requireContext(), candidaturas, candidaturaId -> {
+        adapter = new CandidaturasAdapter(requireContext(), exibidas, candidaturaId -> {
             Bundle args = new Bundle();
             args.putLong("candidaturaId", candidaturaId);
             Navigation.findNavController(view).navigate(R.id.action_listaCandidaturas_to_detalhes, args);
         });
         rv.setAdapter(adapter);
 
-        long vagaId = getArguments() != null ? getArguments().getLong("vagaId", -1) : -1;
-        carregarCandidaturas(vagaId);
+        setupFiltros(view);
+
+        vagaIdFixo = getArguments() != null ? getArguments().getLong("vagaId", -1) : -1;
+
+        if (vagaIdFixo > 0) {
+            // Veio da lista de vagas: exibe a vaga fixa e carrega direto
+            mostrarVagaFixa(view);
+            carregarCandidaturasPorVaga(view, vagaIdFixo);
+        } else {
+            // Veio do dashboard: exibe seletor de vaga
+            mostrarSeletorVaga(view);
+            carregarVagas(view);
+        }
     }
 
-    private void carregarCandidaturas(long vagaId) {
-        ApiService api = ApiClient.getService(requireContext());
-        Call<List<CandidaturaEmpresaResponse>> call = vagaId > 0
-                ? api.candidatosPorVaga(vagaId)
-                : api.candidaturasEmpresa();
+    // ── Modo vaga fixa ───────────────────────────────────────────────────────
 
-        call.enqueue(new Callback<List<CandidaturaEmpresaResponse>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<CandidaturaEmpresaResponse>> c,
-                                   @NonNull Response<List<CandidaturaEmpresaResponse>> response) {
-                if (!isAdded()) return;
-                if (response.isSuccessful() && response.body() != null) {
-                    candidaturas.clear();
-                    candidaturas.addAll(response.body());
-                    adapter.notifyDataSetChanged();
-                }
-            }
+    private void mostrarVagaFixa(View view) {
+        view.findViewById(R.id.layout_vaga_fixa).setVisibility(View.VISIBLE);
+        view.findViewById(R.id.til_vaga_selector).setVisibility(View.GONE);
+    }
 
-            @Override
-            public void onFailure(@NonNull Call<List<CandidaturaEmpresaResponse>> c, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Erro ao carregar candidaturas: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
+    private void carregarCandidaturasPorVaga(View view, long vagaId) {
+        ApiClient.getService(requireContext()).candidatosPorVaga(vagaId)
+                .enqueue(new Callback<List<CandidaturaEmpresaResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<CandidaturaEmpresaResponse>> c,
+                                           @NonNull Response<List<CandidaturaEmpresaResponse>> r) {
+                        if (!isAdded()) return;
+                        if (r.isSuccessful() && r.body() != null) {
+                            todas.clear();
+                            todas.addAll(r.body());
+                            aplicarFiltro(null);
+
+                            if (!todas.isEmpty() && todas.get(0).tituloVaga != null) {
+                                TextView tvNomeVaga = view.findViewById(R.id.tv_nome_vaga);
+                                if (tvNomeVaga != null) tvNomeVaga.setText(todas.get(0).tituloVaga);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<CandidaturaEmpresaResponse>> c, @NonNull Throwable t) {
+                        if (!isAdded()) return;
+                        Toast.makeText(requireContext(), "Erro ao carregar candidaturas", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // ── Modo seletor ─────────────────────────────────────────────────────────
+
+    private void mostrarSeletorVaga(View view) {
+        view.findViewById(R.id.til_vaga_selector).setVisibility(View.VISIBLE);
+        view.findViewById(R.id.layout_vaga_fixa).setVisibility(View.GONE);
+    }
+
+    private void carregarVagas(View view) {
+        ApiClient.getService(requireContext()).minhasVagas()
+                .enqueue(new Callback<List<VagaResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<VagaResponse>> c,
+                                           @NonNull Response<List<VagaResponse>> r) {
+                        if (!isAdded()) return;
+                        if (r.isSuccessful() && r.body() != null) {
+                            vagas.clear();
+                            vagas.addAll(r.body());
+                            bindSeletorVaga(view);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<VagaResponse>> c, @NonNull Throwable t) {
+                        if (!isAdded()) return;
+                        Toast.makeText(requireContext(), "Erro ao carregar vagas", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void bindSeletorVaga(View view) {
+        AutoCompleteTextView actv = view.findViewById(R.id.actv_vaga_selector);
+        if (actv == null) return;
+
+        List<String> titulos = vagas.stream()
+                .map(v -> v.titulo != null ? v.titulo : "Vaga #" + v.id)
+                .collect(Collectors.toList());
+
+        actv.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, titulos));
+
+        actv.setOnItemClickListener((parent, v, position, id) -> {
+            VagaResponse selecionada = vagas.get(position);
+            todas.clear();
+            exibidas.clear();
+            adapter.notifyDataSetChanged();
+            atualizarEstadoVazio();
+            carregarCandidaturasPorVaga(view, selecionada.id);
         });
+
+        // Seleciona automaticamente se houver só uma vaga
+        if (vagas.size() == 1) {
+            actv.setText(titulos.get(0), false);
+            carregarCandidaturasPorVaga(view, vagas.get(0).id);
+        } else if (vagas.isEmpty()) {
+            Toast.makeText(requireContext(), "Nenhuma vaga cadastrada", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ── Filtros por status ───────────────────────────────────────────────────
+
+    private void setupFiltros(View view) {
+        ChipGroup chips = view.findViewById(R.id.chip_group_status);
+        if (chips == null) return;
+        chips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) return;
+            int id = checkedIds.get(0);
+            String filtro = null;
+            if (id == R.id.chip_pendente)      filtro = "Aguardando";
+            else if (id == R.id.chip_em_analise) filtro = "Em análise";
+            else if (id == R.id.chip_aprovado)   filtro = "Aprovado";
+            else if (id == R.id.chip_reprovado)  filtro = "Reprovado";
+            aplicarFiltro(filtro);
+        });
+    }
+
+    private void aplicarFiltro(@Nullable String status) {
+        exibidas.clear();
+        if (status == null) {
+            exibidas.addAll(todas);
+        } else {
+            final String f = status;
+            exibidas.addAll(todas.stream()
+                    .filter(c -> f.equalsIgnoreCase(c.status))
+                    .collect(Collectors.toList()));
+        }
+        adapter.notifyDataSetChanged();
+        atualizarEstadoVazio();
+    }
+
+    private void atualizarEstadoVazio() {
+        if (tvNenhuma != null)
+            tvNenhuma.setVisibility(exibidas.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

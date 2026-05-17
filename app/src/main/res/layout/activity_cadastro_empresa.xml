@@ -176,7 +176,7 @@
                             android:id="@+id/et_cnpj"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="number"
+                            android:inputType="phone"
                             android:maxLength="18"
                             android:imeOptions="actionNext" />
                     </com.google.android.material.textfield.TextInputLayout>

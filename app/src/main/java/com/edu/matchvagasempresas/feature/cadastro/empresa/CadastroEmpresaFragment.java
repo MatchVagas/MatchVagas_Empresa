@@ -2,6 +2,8 @@ package com.edu.matchvagasempresas.feature.cadastro.empresa;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,16 +19,13 @@ import androidx.navigation.Navigation;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.model.AuthResponse;
-import com.edu.matchvagasempresas.model.EmpresaRequest;
-import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.LookupItem;
+import com.edu.matchvagasempresas.model.RegisterEmpresaRequest;
 import com.edu.matchvagasempresas.network.ApiClient;
-import com.edu.matchvagasempresas.network.ApiService;
 import com.edu.matchvagasempresas.network.LookupCache;
 import com.edu.matchvagasempresas.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -60,6 +59,7 @@ public class CadastroEmpresaFragment extends Fragment {
         actvRamo = view.findViewById(R.id.actv_ramo);
 
         setupDatePicker(view);
+        setupCnpjMask(view.findViewById(R.id.et_cnpj));
         carregarLookups();
 
         view.findViewById(R.id.btn_cadastrar).setOnClickListener(v -> cadastrar(view, v));
@@ -102,8 +102,14 @@ public class CadastroEmpresaFragment extends Fragment {
             Toast.makeText(requireContext(), "Senhas não coincidem", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (cnpj.isEmpty() || razaoSocial.isEmpty() || nomeFantasia.isEmpty()) {
+        String cnpjDigits = cnpj.replaceAll("[^0-9]", "");
+        if (razaoSocial.isEmpty() || nomeFantasia.isEmpty()) {
             Toast.makeText(requireContext(), "Preencha os dados da empresa", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (cnpjDigits.length() != 14) {
+            Toast.makeText(requireContext(), "CNPJ deve ter 14 dígitos (XX.XXX.XXX/XXXX-XX)",
+                    Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -120,70 +126,36 @@ public class CadastroEmpresaFragment extends Fragment {
 
         ((MaterialButton) btn).setEnabled(false);
 
-        final String finalEmail = email;
-        final String finalSenha = senha;
-        final String finalNomeFantasia = nomeFantasia;
-        final Long finalPorteId = porteId;
-        final Long finalRamoId = ramoId;
-        final String finalDescricao = descricao;
-        final String finalSite = site.isEmpty() ? null : site;
-        final String finalCnpj = cnpj;
-        final String finalRazaoSocial = razaoSocial;
+        // Garante que nenhum token de sessão anterior seja enviado no header de registro
+        new SessionManager(requireContext()).clear();
+        ApiClient.reset();
 
-        ApiService api = ApiClient.getService(requireContext());
+        RegisterEmpresaRequest req = new RegisterEmpresaRequest(
+                nome, email, senha, isoData,
+                cnpj, razaoSocial, nomeFantasia,
+                descricao.isEmpty() ? null : descricao,
+                porteId, ramoId,
+                site.isEmpty() ? null : site);
 
-        JsonObject registerBody = new JsonObject();
-        registerBody.addProperty("nome", nome);
-        registerBody.addProperty("email", email);
-        registerBody.addProperty("senha", senha);
-        registerBody.addProperty("dataNascimento", isoData);
-        registerBody.addProperty("tipoUsuario", "EMPRESA");
-        registerBody.addProperty("ativo", true);
-
-        api.register(registerBody).enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(@NonNull Call<JsonObject> call,
-                                   @NonNull Response<JsonObject> r) {
-                if (!isAdded()) return;
-                if (r.isSuccessful()) {
-                    fazerLogin(btn, finalEmail, finalSenha,
-                            finalCnpj, finalRazaoSocial, finalNomeFantasia,
-                            finalDescricao, finalPorteId, finalRamoId, finalSite);
-                } else {
-                    ((MaterialButton) btn).setEnabled(true);
-                    Toast.makeText(requireContext(), "Erro no cadastro: e-mail já em uso?",
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<JsonObject> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                ((MaterialButton) btn).setEnabled(true);
-                Toast.makeText(requireContext(), "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void fazerLogin(View btn, String email, String senha,
-                            String cnpj, String razaoSocial, String nomeFantasia,
-                            String descricao, Long porteId, Long ramoId, String site) {
-        JsonObject loginBody = new JsonObject();
-        loginBody.addProperty("email", email);
-        loginBody.addProperty("senha", senha);
-
-        ApiClient.getService(requireContext()).login(loginBody).enqueue(new Callback<AuthResponse>() {
+        ApiClient.getService(requireContext()).registerEmpresa(req).enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(@NonNull Call<AuthResponse> call,
                                    @NonNull Response<AuthResponse> r) {
                 if (!isAdded()) return;
+                ((MaterialButton) btn).setEnabled(true);
                 if (r.isSuccessful() && r.body() != null) {
-                    new SessionManager(requireContext()).saveAuth(r.body().token, r.body().usuarioId);
-                    criarEmpresa(btn, cnpj, razaoSocial, nomeFantasia, descricao, porteId, ramoId, site);
+                    AuthResponse auth = r.body();
+                    SessionManager session = new SessionManager(requireContext());
+                    session.saveAuth(auth.token, auth.usuarioId);
+                    // empresa status começa como PENDENTE — salva na sessão
+                    session.saveEmpresa(null, nomeFantasia, "PENDENTE");
+                    ApiClient.reset();
+                    Navigation.findNavController(btn).navigate(R.id.action_cadastroEmpresa_to_dashboard);
                 } else {
-                    ((MaterialButton) btn).setEnabled(true);
-                    Toast.makeText(requireContext(), "Cadastro criado, faça login", Toast.LENGTH_SHORT).show();
-                    Navigation.findNavController(btn).navigateUp();
+                    String msg = r.code() == 400
+                            ? "Dados inválidos: verifique CNPJ, e-mail ou campos obrigatórios."
+                            : "Erro no cadastro. Tente novamente.";
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -191,31 +163,8 @@ public class CadastroEmpresaFragment extends Fragment {
             public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
                 ((MaterialButton) btn).setEnabled(true);
-                Navigation.findNavController(btn).navigateUp();
-            }
-        });
-    }
-
-    private void criarEmpresa(View btn, String cnpj, String razaoSocial, String nomeFantasia,
-                              String descricao, Long porteId, Long ramoId, String site) {
-        EmpresaRequest req = new EmpresaRequest(cnpj, razaoSocial, nomeFantasia, descricao, porteId, ramoId, site);
-        ApiClient.getService(requireContext()).criarEmpresa(req).enqueue(new Callback<EmpresaResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<EmpresaResponse> call,
-                                   @NonNull Response<EmpresaResponse> r) {
-                if (!isAdded()) return;
-                ((MaterialButton) btn).setEnabled(true);
-                if (r.isSuccessful() && r.body() != null) {
-                    new SessionManager(requireContext()).saveEmpresa(r.body().id, r.body().nomeFantasia);
-                }
-                Navigation.findNavController(btn).navigate(R.id.action_cadastroEmpresa_to_dashboard);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<EmpresaResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                ((MaterialButton) btn).setEnabled(true);
-                Navigation.findNavController(btn).navigate(R.id.action_cadastroEmpresa_to_dashboard);
+                Toast.makeText(requireContext(),
+                        "Erro de conexão ao criar empresa: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -246,6 +195,36 @@ public class CadastroEmpresaFragment extends Fragment {
             if (item.getLabel().equals(label)) return item.id;
         }
         return null;
+    }
+
+    private void setupCnpjMask(TextInputEditText et) {
+        et.addTextChangedListener(new TextWatcher() {
+            private boolean updating = false;
+
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (updating) return;
+                updating = true;
+
+                String digits = s.toString().replaceAll("[^0-9]", "");
+                if (digits.length() > 14) digits = digits.substring(0, 14);
+
+                // XX.XXX.XXX/XXXX-XX
+                StringBuilder masked = new StringBuilder();
+                for (int i = 0; i < digits.length(); i++) {
+                    if (i == 2 || i == 5) masked.append('.');
+                    else if (i == 8)      masked.append('/');
+                    else if (i == 12)     masked.append('-');
+                    masked.append(digits.charAt(i));
+                }
+
+                s.replace(0, s.length(), masked.toString());
+                updating = false;
+            }
+        });
     }
 
     private String parseIsoDate(String dataBr) {

@@ -50,10 +50,23 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
         h.tvIniciais.setText(iniciais.toUpperCase());
         h.tvNome.setText(nome);
         h.tvData.setText("Candidatou-se em " + formatDate(c.dataCandidatura));
-        h.tvStatus.setText(c.status != null ? c.status : "");
+        String status = c.status != null ? c.status : "";
+        h.tvStatus.setText(status);
+        h.tvStatus.setBackgroundResource(badgeParaStatus(status));
 
         long id = c.id != null ? c.id : -1;
         h.itemView.setOnClickListener(view -> listener.onCandidaturaClick(id));
+    }
+
+    private int badgeParaStatus(String status) {
+        if (status == null) return R.drawable.bg_badge_pendente;
+        switch (status.toLowerCase()) {
+            case "aprovado":   return R.drawable.bg_badge_aprovado;
+            case "reprovado":  return R.drawable.bg_badge_reprovado;
+            case "em análise": return R.drawable.bg_badge_analise;
+            case "contratado": return R.drawable.bg_badge_ativa;
+            default:           return R.drawable.bg_badge_pendente;
+        }
     }
 
     private String formatDate(String isoDate) {

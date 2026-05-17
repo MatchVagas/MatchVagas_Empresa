@@ -13,4 +13,13 @@ public class EmpresaResponse {
     public Long usuarioGestorId;
     public String nomeGestor;
     public String status;
+    public Telefone telefone;
+
+    public static class Telefone {
+        public Long id;
+        public String numero;
+        public Long tipoTelefoneId;
+        public String tipoTelefoneNome;
+        public boolean wpp;
+    }
 }

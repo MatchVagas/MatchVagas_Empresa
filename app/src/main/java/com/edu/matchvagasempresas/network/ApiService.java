@@ -5,6 +5,7 @@ import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.EmpresaRequest;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.LookupItem;
+import com.edu.matchvagasempresas.model.RegisterEmpresaRequest;
 import com.edu.matchvagasempresas.model.VagaRequest;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.google.gson.JsonObject;
@@ -15,6 +16,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -29,6 +31,9 @@ public interface ApiService {
 
     @POST("api/auth/register")
     Call<JsonObject> register(@Body JsonObject body);
+
+    @POST("api/auth/register-empresa")
+    Call<AuthResponse> registerEmpresa(@Body RegisterEmpresaRequest request);
 
     // ── Empresa ───────────────────────────────────────────────────────────────
 
@@ -68,6 +73,11 @@ public interface ApiService {
 
     @GET("api/candidaturas/{id}/empresa")
     Call<CandidaturaEmpresaResponse> detalharCandidatura(@Path("id") Long id);
+
+    @PATCH("api/candidaturas/{id}/empresa/status/{statusId}")
+    Call<CandidaturaEmpresaResponse> atualizarStatusCandidatura(
+            @Path("id") Long candidaturaId,
+            @Path("statusId") Long statusId);
 
     // ── Lookups (públicos) ────────────────────────────────────────────────────
 

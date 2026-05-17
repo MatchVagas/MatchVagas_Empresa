@@ -111,12 +111,17 @@ public class EditarVagaFragment extends Fragment {
     }
 
     private void preencherFormulario(View view, VagaResponse v) {
-        setEditText(view, R.id.et_titulo, v.titulo);
-        setEditText(view, R.id.et_area_atuacao, v.areaAtuacao);
-        setEditText(view, R.id.et_salario_min, v.salarioMinimo != null ? String.valueOf(v.salarioMinimo.intValue()) : "");
-        setEditText(view, R.id.et_salario_max, v.salarioMaximo != null ? String.valueOf(v.salarioMaximo.intValue()) : "");
+        setEditText(view, R.id.et_titulo,        v.titulo);
+        setEditText(view, R.id.et_area_atuacao,  v.areaAtuacao);
+        setEditText(view, R.id.et_descricao,     v.descricao);
+        setEditText(view, R.id.et_requisitos,    v.requisitos);
+        setEditText(view, R.id.et_beneficios,    v.beneficios);
+        setEditText(view, R.id.et_salario_min,   v.salarioMinimo != null ? formatDecimal(v.salarioMinimo) : "");
+        setEditText(view, R.id.et_salario_max,   v.salarioMaximo != null ? formatDecimal(v.salarioMaximo) : "");
         setEditText(view, R.id.et_carga_horaria, v.cargaHoraria);
-        setEditText(view, R.id.et_num_vagas, v.numeroVagas != null ? String.valueOf(v.numeroVagas) : "");
+        setEditText(view, R.id.et_num_vagas,     v.numeroVagas != null ? String.valueOf(v.numeroVagas) : "");
+        setEditText(view, R.id.et_idade_min,     v.idadeMinima != null ? String.valueOf(v.idadeMinima) : "");
+        setEditText(view, R.id.et_idade_max,     v.idadeMaxima != null ? String.valueOf(v.idadeMaxima) : "");
         setEditText(view, R.id.et_data_expiracao, formatDateBr(v.dataExpiracao));
     }
 
@@ -132,32 +137,37 @@ public class EditarVagaFragment extends Fragment {
     private void atualizarVaga(View view, View btn) {
         if (vagaAtual == null || vagaId <= 0) return;
 
-        TextInputEditText etTitulo = view.findViewById(R.id.et_titulo);
-        TextInputEditText etArea = view.findViewById(R.id.et_area_atuacao);
-        TextInputEditText etDesc = view.findViewById(R.id.et_descricao);
-        TextInputEditText etReq = view.findViewById(R.id.et_requisitos);
-        TextInputEditText etSalMin = view.findViewById(R.id.et_salario_min);
-        TextInputEditText etSalMax = view.findViewById(R.id.et_salario_max);
-        TextInputEditText etCarga = view.findViewById(R.id.et_carga_horaria);
-        TextInputEditText etNVagas = view.findViewById(R.id.et_num_vagas);
-        TextInputEditText etData = view.findViewById(R.id.et_data_expiracao);
+        TextInputEditText etTitulo  = view.findViewById(R.id.et_titulo);
+        TextInputEditText etArea    = view.findViewById(R.id.et_area_atuacao);
+        TextInputEditText etDesc    = view.findViewById(R.id.et_descricao);
+        TextInputEditText etReq     = view.findViewById(R.id.et_requisitos);
+        TextInputEditText etBenef   = view.findViewById(R.id.et_beneficios);
+        TextInputEditText etSalMin  = view.findViewById(R.id.et_salario_min);
+        TextInputEditText etSalMax  = view.findViewById(R.id.et_salario_max);
+        TextInputEditText etCarga   = view.findViewById(R.id.et_carga_horaria);
+        TextInputEditText etNVagas  = view.findViewById(R.id.et_num_vagas);
+        TextInputEditText etIdMin   = view.findViewById(R.id.et_idade_min);
+        TextInputEditText etIdMax   = view.findViewById(R.id.et_idade_max);
+        TextInputEditText etData    = view.findViewById(R.id.et_data_expiracao);
 
         VagaRequest req = new VagaRequest();
-        req.empresaId = vagaAtual.empresaId;
-        req.titulo = getText(etTitulo);
-        req.descricao = getText(etDesc) .isEmpty() ? vagaAtual.descricao : getText(etDesc);
-        req.requisitos = getText(etReq).isEmpty() ? vagaAtual.requisitos : getText(etReq);
-        req.areaAtuacao = getText(etArea);
-        req.tipoVagaId = getSelectedId(LookupCache.get().getTiposVaga(), actvTipo.getText().toString(), vagaAtual.tipoVagaId);
-        req.modalidadeId = getSelectedId(LookupCache.get().getModalidades(), actvModalidade.getText().toString(), vagaAtual.modalidadeId);
+        req.empresaId    = vagaAtual.empresaId;
+        req.titulo       = getText(etTitulo);
+        req.descricao    = getText(etDesc).isEmpty()  ? vagaAtual.descricao  : getText(etDesc);
+        req.requisitos   = getText(etReq).isEmpty()   ? vagaAtual.requisitos : getText(etReq);
+        req.areaAtuacao  = getText(etArea);
+        req.beneficios   = getText(etBenef).isEmpty() ? vagaAtual.beneficios : getText(etBenef);
+        req.cargaHoraria = getText(etCarga);
+        req.tipoVagaId   = getSelectedId(LookupCache.get().getTiposVaga(),    actvTipo.getText().toString(),        vagaAtual.tipoVagaId);
+        req.modalidadeId = getSelectedId(LookupCache.get().getModalidades(),  actvModalidade.getText().toString(),  vagaAtual.modalidadeId);
         req.escolaridadeId = getSelectedId(LookupCache.get().getEscolaridades(), actvEscolaridade.getText().toString(), vagaAtual.escolaridadeId);
-        req.cidadeId = getSelectedId(LookupCache.get().getCidades(), actvCidade.getText().toString(), vagaAtual.cidadeId);
+        req.cidadeId     = getSelectedId(LookupCache.get().getCidades(),      actvCidade.getText().toString(),      vagaAtual.cidadeId);
         req.statusVagaId = vagaAtual.statusVagaId;
         req.salarioMinimo = parseDouble(getText(etSalMin), vagaAtual.salarioMinimo != null ? vagaAtual.salarioMinimo : 0.0);
         req.salarioMaximo = parseDouble(getText(etSalMax), vagaAtual.salarioMaximo != null ? vagaAtual.salarioMaximo : 0.0);
-        req.cargaHoraria = getText(etCarga);
-        req.numeroVagas = parseInt(getText(etNVagas), vagaAtual.numeroVagas != null ? vagaAtual.numeroVagas : 1);
-        req.beneficios = vagaAtual.beneficios;
+        req.numeroVagas  = parseInt(getText(etNVagas), vagaAtual.numeroVagas != null ? vagaAtual.numeroVagas : 1);
+        req.idadeMinima  = parseIntOrNull(getText(etIdMin));
+        req.idadeMaxima  = parseIntOrNull(getText(etIdMax));
         String dataInput = getText(etData);
         req.dataExpiracao = dataInput.isEmpty() ? vagaAtual.dataExpiracao : parseIsoDate(dataInput);
 
@@ -220,8 +230,18 @@ public class EditarVagaFragment extends Fragment {
         try { return Integer.parseInt(s); } catch (NumberFormatException e) { return def; }
     }
 
+    private Integer parseIntOrNull(String s) {
+        if (s == null || s.isEmpty()) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
+    }
+
     private double parseDouble(String s, double def) {
         try { return Double.parseDouble(s.replace(",", ".")); } catch (NumberFormatException e) { return def; }
+    }
+
+    private String formatDecimal(double value) {
+        if (value == Math.floor(value)) return String.valueOf((long) value);
+        return String.valueOf(value).replace(".", ",");
     }
 
     private String parseIsoDate(String dataBr) {

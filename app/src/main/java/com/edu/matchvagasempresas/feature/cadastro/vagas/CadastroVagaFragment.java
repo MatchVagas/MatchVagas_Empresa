@@ -82,16 +82,25 @@ public class CadastroVagaFragment extends Fragment {
     }
 
     private void publicarVaga(View view, View btn) {
+        SessionManager session = new SessionManager(requireContext());
+        if (!session.isEmpresaAprovada()) {
+            Toast.makeText(requireContext(),
+                    "Sua empresa ainda não foi aprovada. Aguarde a aprovação do administrador.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         TextInputEditText etTitulo = view.findViewById(R.id.et_titulo);
         TextInputEditText etArea = view.findViewById(R.id.et_area_atuacao);
         TextInputEditText etDesc = view.findViewById(R.id.et_descricao);
         TextInputEditText etReq = view.findViewById(R.id.et_requisitos);
         TextInputEditText etSalMin = view.findViewById(R.id.et_salario_min);
         TextInputEditText etSalMax = view.findViewById(R.id.et_salario_max);
-        TextInputEditText etBenef = view.findViewById(R.id.et_beneficios);
-        TextInputEditText etCarga = view.findViewById(R.id.et_carga_horaria);
+        TextInputEditText etBenef  = view.findViewById(R.id.et_beneficios);
+        TextInputEditText etCarga  = view.findViewById(R.id.et_carga_horaria);
         TextInputEditText etNVagas = view.findViewById(R.id.et_num_vagas);
-        TextInputEditText etData = view.findViewById(R.id.et_data_expiracao);
+        TextInputEditText etIdMin  = view.findViewById(R.id.et_idade_min);
+        TextInputEditText etIdMax  = view.findViewById(R.id.et_idade_max);
+        TextInputEditText etData   = view.findViewById(R.id.et_data_expiracao);
 
         String titulo = getText(etTitulo);
         String area = getText(etArea);
@@ -116,7 +125,6 @@ public class CadastroVagaFragment extends Fragment {
 
         List<LookupItem> statusVaga = LookupCache.get().getStatusVaga();
         Long statusId = statusVaga.isEmpty() ? null : statusVaga.get(0).id;
-        SessionManager session = new SessionManager(requireContext());
         Long empresaId = session.getEmpresaId();
 
         VagaRequest request = new VagaRequest();
@@ -130,11 +138,13 @@ public class CadastroVagaFragment extends Fragment {
         request.cidadeId = cidadeId;
         request.statusVagaId = statusId;
         request.areaAtuacao = area;
-        request.beneficios = getText(etBenef);
+        request.beneficios   = getText(etBenef);
         request.cargaHoraria = getText(etCarga);
-        request.numeroVagas = parseInt(getText(etNVagas), 1);
+        request.numeroVagas  = parseInt(getText(etNVagas), 1);
         request.salarioMinimo = parseDouble(getText(etSalMin), 0.0);
         request.salarioMaximo = parseDouble(getText(etSalMax), 0.0);
+        request.idadeMinima  = parseIntOrNull(getText(etIdMin));
+        request.idadeMaxima  = parseIntOrNull(getText(etIdMax));
         request.dataExpiracao = parseIsoDate(getText(etData));
 
         ((MaterialButton) btn).setEnabled(false);
@@ -189,6 +199,11 @@ public class CadastroVagaFragment extends Fragment {
 
     private int parseInt(String s, int def) {
         try { return Integer.parseInt(s); } catch (NumberFormatException e) { return def; }
+    }
+
+    private Integer parseIntOrNull(String s) {
+        if (s == null || s.isEmpty()) return null;
+        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return null; }
     }
 
     private double parseDouble(String s, double def) {
