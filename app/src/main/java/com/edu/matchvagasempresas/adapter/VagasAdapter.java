@@ -31,6 +31,13 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
         this.context = context;
         this.vagas = vagas;
         this.listener = listener;
+        setHasStableIds(true);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        VagaResponse v = vagas.get(position);
+        return v.id != null ? v.id : position;
     }
 
     @NonNull

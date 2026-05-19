@@ -15,8 +15,8 @@ public class CandidaturaEmpresaResponse {
     public Double pretensaoSalarial;
     public String curriculoNomeArquivo;
     public String curriculoCaminho;
-    public String experienciasInfo;
-    public String formacoesInfo;
+    public List<ExperienciaResponse> experiencias;
+    public List<FormacaoResponse> formacoes;
     public List<String> telefones;
     public String endereco;
 }

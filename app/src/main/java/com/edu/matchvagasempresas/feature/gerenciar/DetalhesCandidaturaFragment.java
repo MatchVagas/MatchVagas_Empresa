@@ -1,6 +1,10 @@
 package com.edu.matchvagasempresas.feature.gerenciar;
 
+import android.app.DownloadManager;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +21,10 @@ import androidx.navigation.Navigation;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.model.ExperienciaResponse;
+import com.edu.matchvagasempresas.model.FormacaoResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
+import com.edu.matchvagasempresas.util.SessionManager;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Arrays;
@@ -34,15 +41,18 @@ public class DetalhesCandidaturaFragment extends Fragment {
     // Status disponíveis: label → id no banco
     private static final Map<String, Long> STATUS_MAP = new LinkedHashMap<>();
     static {
-        STATUS_MAP.put("Aguardando",  1L);
-        STATUS_MAP.put("Em análise",  2L);
-        STATUS_MAP.put("Aprovado",    3L);
-        STATUS_MAP.put("Reprovado",   4L);
-        STATUS_MAP.put("Contratado",  5L);
+        STATUS_MAP.put("Em análise",  1L);
+        STATUS_MAP.put("Aprovado",  2L);
+        STATUS_MAP.put("Reprovado",    3L);
+        STATUS_MAP.put("Em entrevista",   4L);
+        STATUS_MAP.put("Proposta Enviada",  5L);
+        STATUS_MAP.put("Contratado",6L);
+        STATUS_MAP.put("Desistiu",7L);
     }
 
     private CandidaturaEmpresaResponse candidaturaAtual;
     private AutoCompleteTextView actvStatus;
+    private MaterialButton btnVerCurriculo;
 
     @Nullable
     @Override
@@ -63,9 +73,9 @@ public class DetalhesCandidaturaFragment extends Fragment {
         actvStatus.setAdapter(new ArrayAdapter<>(requireContext(),
                 android.R.layout.simple_dropdown_item_1line, labels));
 
-        view.findViewById(R.id.btn_ver_curriculo).setOnClickListener(v ->
-                Toast.makeText(requireContext(), "Currículo não disponível nesta versão",
-                        Toast.LENGTH_SHORT).show());
+        btnVerCurriculo = view.findViewById(R.id.btn_ver_curriculo);
+        btnVerCurriculo.setEnabled(false);
+        btnVerCurriculo.setOnClickListener(v -> baixarCurriculo());
 
         view.findViewById(R.id.btn_salvar_status).setOnClickListener(v -> salvarStatus(v));
 
@@ -121,15 +131,66 @@ public class DetalhesCandidaturaFragment extends Fragment {
         else
             setText(view, R.id.tv_telefone_candidato, "Não informado");
 
-        // Perfil profissional
-        setText(view, R.id.tv_resumo,       c.objetivoProfissional);
-        setText(view, R.id.tv_experiencia,  c.experienciasInfo);
-        setText(view, R.id.tv_escolaridade, c.formacoesInfo);
-        setText(view, R.id.tv_area_formacao, "");
-        setText(view, R.id.tv_habilidades,  "");
+        // Contato — endereço
+        setText(view, R.id.tv_endereco, c.endereco);
+
+        // Perfil profissional — exibe apenas o que o candidato autorizou compartilhar
+        setInfoCompartilhada(view, R.id.tv_resumo,         c.objetivoProfissional);
+        setInfoCompartilhada(view, R.id.tv_disponibilidade, c.disponibilidade);
+        setInfoCompartilhada(view, R.id.tv_pretensao,       formatarPretensao(c.pretensaoSalarial));
+        setInfoCompartilhadaLista(view, R.id.tv_experiencia,   formatarExperiencias(c.experiencias));
+        setInfoCompartilhadaLista(view, R.id.tv_escolaridade,  formatarFormacoes(c.formacoes));
+        setInfoCompartilhadaLista(view, R.id.tv_area_formacao, formatarAreaFormacao(c.formacoes));
 
         // Pré-seleciona o status atual no dropdown
         if (c.status != null && actvStatus != null) actvStatus.setText(c.status, false);
+
+        // Botão de download do currículo
+        boolean temCurriculo = c.curriculoNomeArquivo != null;
+        if (btnVerCurriculo != null) {
+            btnVerCurriculo.setEnabled(temCurriculo);
+            if (temCurriculo) {
+                btnVerCurriculo.setText("Baixar Currículo");
+            } else {
+                btnVerCurriculo.setText("Currículo não compartilhado");
+            }
+        }
+        TextView tvCurriculoStatus = view.findViewById(R.id.tv_curriculo_status);
+        if (tvCurriculoStatus != null) {
+            tvCurriculoStatus.setVisibility(View.VISIBLE);
+            if (temCurriculo) {
+                tvCurriculoStatus.setText("Arquivo: " + c.curriculoNomeArquivo);
+                tvCurriculoStatus.setTextColor(requireContext().getColor(R.color.primary));
+            } else {
+                tvCurriculoStatus.setText("O candidato não autorizou o compartilhamento do currículo");
+                tvCurriculoStatus.setTextColor(requireContext().getColor(R.color.text_secondary));
+            }
+        }
+    }
+
+    private void baixarCurriculo() {
+        if (candidaturaAtual == null || candidaturaAtual.curriculoNomeArquivo == null) return;
+
+        String token = new SessionManager(requireContext()).getToken();
+        String url = ApiClient.BASE_URL + "api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
+
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        if (token != null) request.addRequestHeader("Authorization", "Bearer " + token);
+        request.setTitle(candidaturaAtual.nomeCandidato != null
+                ? "Currículo de " + candidaturaAtual.nomeCandidato
+                : "Currículo");
+        request.setDescription("Baixando currículo...");
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                candidaturaAtual.curriculoNomeArquivo);
+
+        DownloadManager dm = (DownloadManager) requireContext().getSystemService(Context.DOWNLOAD_SERVICE);
+        if (dm != null) {
+            dm.enqueue(request);
+            Toast.makeText(requireContext(), "Download iniciado — verifique as notificações",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void salvarStatus(View btn) {
@@ -171,6 +232,77 @@ public class DetalhesCandidaturaFragment extends Fragment {
     private void setText(View root, int id, String value) {
         TextView tv = root.findViewById(id);
         if (tv != null) tv.setText(value != null ? value : "Não informado");
+    }
+
+    // Diferencia campo sem dados de campo não compartilhado (null = bloqueado pelo candidato)
+    private void setInfoCompartilhada(View root, int id, String value) {
+        TextView tv = root.findViewById(id);
+        if (tv == null) return;
+        if (value != null) {
+            tv.setText(value);
+            tv.setTextColor(requireContext().getColor(R.color.text_primary));
+            tv.setAlpha(1f);
+        } else {
+            tv.setText("Não compartilhado pelo candidato");
+            tv.setTextColor(requireContext().getColor(R.color.text_secondary));
+            tv.setAlpha(0.7f);
+        }
+    }
+
+    // Igual ao anterior mas recebe String formatada vinda de lista (null = lista não compartilhada)
+    private void setInfoCompartilhadaLista(View root, int id, String formatted) {
+        setInfoCompartilhada(root, id, formatted);
+    }
+
+    private String formatarAreaFormacao(java.util.List<FormacaoResponse> lista) {
+        if (lista == null) return null;
+        if (lista.isEmpty()) return "Não informado";
+        StringBuilder sb = new StringBuilder();
+        for (FormacaoResponse f : lista) {
+            if (f.curso == null) continue;
+            if (sb.length() > 0) sb.append(" • ");
+            sb.append(f.curso);
+        }
+        return sb.length() > 0 ? sb.toString() : "Não informado";
+    }
+
+    private String formatarPretensao(Double valor) {
+        if (valor == null) return null;
+        return String.format(new java.util.Locale("pt", "BR"), "R$ %.2f", valor);
+    }
+
+    private String formatarExperiencias(java.util.List<ExperienciaResponse> lista) {
+        if (lista == null) return null;
+        if (lista.isEmpty()) return "Nenhuma experiência cadastrada";
+        StringBuilder sb = new StringBuilder();
+        for (ExperienciaResponse e : lista) {
+            if (sb.length() > 0) sb.append("\n\n");
+            sb.append(e.cargo != null ? e.cargo : "").append(" — ").append(e.empresa != null ? e.empresa : "");
+            String periodo = formatarPeriodo(e.dataInicio, e.dataFim);
+            if (!periodo.isEmpty()) sb.append("\n").append(periodo);
+            if (e.descricao != null && !e.descricao.isBlank()) sb.append("\n").append(e.descricao);
+        }
+        return sb.toString();
+    }
+
+    private String formatarFormacoes(java.util.List<FormacaoResponse> lista) {
+        if (lista == null) return null;
+        if (lista.isEmpty()) return "Nenhuma formação cadastrada";
+        StringBuilder sb = new StringBuilder();
+        for (FormacaoResponse f : lista) {
+            if (sb.length() > 0) sb.append("\n\n");
+            sb.append(f.curso != null ? f.curso : "");
+            if (f.nivel != null) sb.append(" (").append(f.nivel).append(")");
+            if (f.instituicao != null) sb.append("\n").append(f.instituicao);
+            String periodo = formatarPeriodo(f.dataInicio, f.dataFim);
+            if (!periodo.isEmpty()) sb.append("\n").append(periodo);
+        }
+        return sb.toString();
+    }
+
+    private String formatarPeriodo(String inicio, String fim) {
+        if (inicio == null) return "";
+        return inicio + " — " + (fim != null ? fim : "atual");
     }
 
     private String formatDate(String iso) {

@@ -28,7 +28,7 @@ public class SessionManager {
 
     public void saveEmpresa(Long empresaId, String nomeEmpresa, String status) {
         prefs.edit()
-                .putLong(KEY_EMPRESA_ID, empresaId)
+                .putLong(KEY_EMPRESA_ID, empresaId != null ? empresaId : -1L)
                 .putString(KEY_NOME_EMPRESA, nomeEmpresa)
                 .putString(KEY_STATUS_EMPRESA, status)
                 .apply();

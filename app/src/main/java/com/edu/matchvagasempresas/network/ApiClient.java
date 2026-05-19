@@ -2,8 +2,13 @@ package com.edu.matchvagasempresas.network;
 
 import android.content.Context;
 
+import com.edu.matchvagasempresas.BuildConfig;
 import com.edu.matchvagasempresas.util.SessionManager;
 
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -12,9 +17,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
 
-    // Use 10.0.2.2 para acessar localhost do host a partir do emulador Android.
-    // Para dispositivo físico, substitua pelo IP da máquina na mesma rede.
-    public static final String BASE_URL = "http://10.0.2.2:8080/";
+    public static final String BASE_URL = "https://backend-tgi8.onrender.com";
+
+    private static final long CACHE_SIZE = 5L * 1024 * 1024; // 5 MB
+    private static final int  CONNECT_TIMEOUT = 10;
+    private static final int  READ_TIMEOUT    = 30;
+    private static final int  WRITE_TIMEOUT   = 30;
 
     private static ApiService apiService;
 
@@ -23,10 +31,11 @@ public class ApiClient {
 
         SessionManager session = new SessionManager(context);
 
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient client = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(READ_TIMEOUT,    TimeUnit.SECONDS)
+                .writeTimeout(WRITE_TIMEOUT,  TimeUnit.SECONDS)
+                .cache(new Cache(new File(context.getCacheDir(), "http_cache"), CACHE_SIZE))
                 .addInterceptor(chain -> {
                     String token = session.getToken();
                     Request original = chain.request();
@@ -36,17 +45,21 @@ public class ApiClient {
                                     .build()
                             : original;
                     return chain.proceed(request);
-                })
-                .addInterceptor(logging)
-                .build();
+                });
 
-        Retrofit retrofit = new Retrofit.Builder()
+        if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            builder.addInterceptor(logging);
+        }
+
+        apiService = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
-                .client(client)
+                .client(builder.build())
                 .addConverterFactory(GsonConverterFactory.create())
-                .build();
+                .build()
+                .create(ApiService.class);
 
-        apiService = retrofit.create(ApiService.class);
         return apiService;
     }
 

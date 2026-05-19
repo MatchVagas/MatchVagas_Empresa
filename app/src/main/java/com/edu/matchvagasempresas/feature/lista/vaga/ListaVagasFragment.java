@@ -18,6 +18,7 @@ import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.VagasAdapter;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
+import com.edu.matchvagasempresas.network.DataCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,24 +82,20 @@ public class ListaVagasFragment extends Fragment {
     }
 
     private void carregarVagas() {
-        ApiClient.getService(requireContext()).minhasVagas().enqueue(new Callback<List<VagaResponse>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<VagaResponse>> call,
-                                   @NonNull Response<List<VagaResponse>> response) {
-                if (!isAdded()) return;
-                if (response.isSuccessful() && response.body() != null) {
+        DataCache.get().loadVagas(requireContext(),
+                cached -> {
+                    if (cached != null && isAdded()) {
+                        vagas.clear();
+                        vagas.addAll(cached);
+                        adapter.notifyDataSetChanged();
+                    }
+                },
+                fresh -> {
+                    if (!isAdded()) return;
                     vagas.clear();
-                    vagas.addAll(response.body());
+                    vagas.addAll(fresh);
                     adapter.notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<List<VagaResponse>> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Erro ao carregar vagas: " + t.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        );
     }
 }

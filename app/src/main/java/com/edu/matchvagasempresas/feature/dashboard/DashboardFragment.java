@@ -23,6 +23,7 @@ import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
+import com.edu.matchvagasempresas.network.DataCache;
 import com.edu.matchvagasempresas.util.SessionManager;
 
 import java.util.ArrayList;
@@ -65,41 +66,27 @@ public class DashboardFragment extends Fragment {
         view.findViewById(R.id.iv_logout).setOnClickListener(v -> confirmLogout(v));
 
         setupVagasRecentes(view);
-        carregarEmpresa();
-        carregarVagas();
+        carregarEmpresaComCache();
+        carregarVagasComCache();
         carregarCandidaturas();
     }
 
     // ── Empresa ──────────────────────────────────────────────────────────────
 
-    private void carregarEmpresa() {
-        ApiClient.getService(requireContext()).minhaEmpresa()
-                .enqueue(new Callback<EmpresaResponse>() {
-                    @Override
-                    public void onResponse(@NonNull Call<EmpresaResponse> call,
-                                           @NonNull Response<EmpresaResponse> r) {
-                        if (!isAdded()) return;
-                        if (r.isSuccessful() && r.body() != null) {
-                            EmpresaResponse e = r.body();
-                            setText(R.id.tv_nome_empresa, e.nomeFantasia);
-                            setText(R.id.tv_cnpj,         formatarCnpj(e.cnpj));
+    private void carregarEmpresaComCache() {
+        DataCache.get().loadEmpresa(requireContext(),
+                cached -> { if (cached != null && isAdded()) aplicarEmpresa(cached); },
+                fresh  -> { if (isAdded()) aplicarEmpresa(fresh); }
+        );
+    }
 
-                            // Atualiza sessão com dados frescos
-                            new SessionManager(requireContext())
-                                    .saveEmpresa(e.id, e.nomeFantasia, e.status);
-
-                            // Atualiza banner de pendente
-                            MaterialCardView card = rootView.findViewById(R.id.card_pendente);
-                            if (card != null) {
-                                boolean pendente = "PENDENTE".equalsIgnoreCase(e.status);
-                                card.setVisibility(pendente ? View.VISIBLE : View.GONE);
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<EmpresaResponse> call, @NonNull Throwable t) {}
-                });
+    private void aplicarEmpresa(EmpresaResponse e) {
+        setText(R.id.tv_nome_empresa, e.nomeFantasia);
+        setText(R.id.tv_cnpj,        formatarCnpj(e.cnpj));
+        new SessionManager(requireContext()).saveEmpresa(e.id, e.nomeFantasia, e.status);
+        MaterialCardView card = rootView.findViewById(R.id.card_pendente);
+        if (card != null)
+            card.setVisibility("PENDENTE".equalsIgnoreCase(e.status) ? View.VISIBLE : View.GONE);
     }
 
     // ── Vagas ─────────────────────────────────────────────────────────────────
@@ -132,36 +119,21 @@ public class DashboardFragment extends Fragment {
         rv.setAdapter(adapter);
     }
 
-    private void carregarVagas() {
-        ApiClient.getService(requireContext()).minhasVagas()
-                .enqueue(new Callback<List<VagaResponse>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<List<VagaResponse>> call,
-                                           @NonNull Response<List<VagaResponse>> r) {
-                        if (!isAdded()) return;
-                        if (r.isSuccessful() && r.body() != null) {
-                            List<VagaResponse> all = r.body();
+    private void carregarVagasComCache() {
+        DataCache.get().loadVagas(requireContext(),
+                cached -> { if (cached != null && isAdded()) aplicarVagas(cached); },
+                fresh  -> { if (isAdded()) aplicarVagas(fresh); }
+        );
+    }
 
-                            // Contadores
-                            long ativas     = all.stream().filter(v -> isAtiva(v.statusDescricao)).count();
-                            long expiradas  = all.stream().filter(v -> isExpirada(v.statusDescricao)).count();
-
-                            setText(R.id.tv_total_vagas,     String.valueOf(ativas));
-                            setText(R.id.tv_vagas_expiradas, String.valueOf(expiradas));
-
-                            // Vagas recentes (até 3)
-                            vagas.clear();
-                            vagas.addAll(all.subList(0, Math.min(3, all.size())));
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<List<VagaResponse>> call, @NonNull Throwable t) {
-                        if (!isAdded()) return;
-                        Toast.makeText(requireContext(), "Erro ao carregar vagas", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private void aplicarVagas(List<VagaResponse> all) {
+        long ativas    = all.stream().filter(v -> isAtiva(v.statusDescricao)).count();
+        long expiradas = all.stream().filter(v -> isExpirada(v.statusDescricao)).count();
+        setText(R.id.tv_total_vagas,     String.valueOf(ativas));
+        setText(R.id.tv_vagas_expiradas, String.valueOf(expiradas));
+        vagas.clear();
+        vagas.addAll(all.subList(0, Math.min(3, all.size())));
+        adapter.notifyDataSetChanged();
     }
 
     // ── Candidaturas ──────────────────────────────────────────────────────────
@@ -191,6 +163,7 @@ public class DashboardFragment extends Fragment {
                 .setMessage("Deseja encerrar a sessão?")
                 .setPositiveButton("Sair", (d, w) -> {
                     new SessionManager(requireContext()).clear();
+                    DataCache.get().clear(requireContext());
                     ApiClient.reset();
                     Navigation.findNavController(anchor).navigate(R.id.action_logout);
                 })

@@ -155,35 +155,16 @@ public class LookupCache {
             if (remaining.decrementAndGet() == 0) saveToPrefs(ctx);
         };
 
-        fetchSilent(api.listarPortes(),        portes,        tick);
-        fetchSilent(api.listarRamos(),         ramos,         tick);
-        fetchSilent(api.listarTiposVaga(),     tiposVaga,     tick);
-        fetchSilent(api.listarModalidades(),   modalidades,   tick);
-        fetchSilent(api.listarEscolaridades(), escolaridades, tick);
-        fetchSilent(api.listarCidades(),       cidades,       tick);
-        fetchSilent(api.listarStatusVaga(),    statusVaga,    tick);
+        fetch(api.listarPortes(),        portes,        tick);
+        fetch(api.listarRamos(),         ramos,         tick);
+        fetch(api.listarTiposVaga(),     tiposVaga,     tick);
+        fetch(api.listarModalidades(),   modalidades,   tick);
+        fetch(api.listarEscolaridades(), escolaridades, tick);
+        fetch(api.listarCidades(),       cidades,       tick);
+        fetch(api.listarStatusVaga(),    statusVaga,    tick);
     }
 
     private void fetch(Call<List<LookupItem>> call, List<LookupItem> target, Runnable tick) {
-        call.enqueue(new Callback<List<LookupItem>>() {
-            @Override
-            public void onResponse(Call<List<LookupItem>> c, Response<List<LookupItem>> r) {
-                main.post(() -> {
-                    if (r.isSuccessful() && r.body() != null && !r.body().isEmpty()) {
-                        target.clear();
-                        target.addAll(r.body());
-                    }
-                    tick.run();
-                });
-            }
-            @Override
-            public void onFailure(Call<List<LookupItem>> c, Throwable t) {
-                main.post(tick);
-            }
-        });
-    }
-
-    private void fetchSilent(Call<List<LookupItem>> call, List<LookupItem> target, Runnable tick) {
         call.enqueue(new Callback<List<LookupItem>>() {
             @Override
             public void onResponse(Call<List<LookupItem>> c, Response<List<LookupItem>> r) {

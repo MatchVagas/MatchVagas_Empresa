@@ -175,6 +175,8 @@ public class EditarPerfilEmpresaFragment extends Fragment {
                         if (r.isSuccessful() && r.body() != null) {
                             new SessionManager(requireContext())
                                     .saveEmpresa(r.body().id, r.body().nomeFantasia, r.body().status);
+                            com.edu.matchvagasempresas.network.DataCache.get()
+                                    .saveEmpresa(requireContext(), r.body());
                             Toast.makeText(requireContext(), "Perfil atualizado!", Toast.LENGTH_SHORT).show();
                             Navigation.findNavController(btn).navigateUp();
                         } else {

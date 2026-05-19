@@ -178,6 +178,7 @@ public class EditarVagaFragment extends Fragment {
                 if (!isAdded()) return;
                 ((MaterialButton) btn).setEnabled(true);
                 if (r.isSuccessful()) {
+                    com.edu.matchvagasempresas.network.DataCache.get().invalidateVagas(requireContext());
                     Toast.makeText(requireContext(), "Vaga atualizada!", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(btn).navigateUp();
                 } else {

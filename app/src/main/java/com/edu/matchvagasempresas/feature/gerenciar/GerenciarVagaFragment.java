@@ -189,6 +189,7 @@ public class GerenciarVagaFragment extends Fragment {
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> r) {
                 if (!isAdded()) return;
                 if (r.isSuccessful()) {
+                    com.edu.matchvagasempresas.network.DataCache.get().invalidateVagas(requireContext());
                     Toast.makeText(requireContext(), "Vaga excluída", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(anchor).navigateUp();
                 } else {
