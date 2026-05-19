@@ -23,9 +23,8 @@ import com.edu.matchvagasempresas.adapter.CandidaturasAdapter;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
-import com.edu.matchvagasempresas.network.ApiService;
+import com.edu.matchvagasempresas.network.DataCache;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,6 @@ public class ListaCandidaturasFragment extends Fragment {
 
     private CandidaturasAdapter adapter;
     private final List<CandidaturaEmpresaResponse> todas = new ArrayList<>();
-    private final List<CandidaturaEmpresaResponse> exibidas = new ArrayList<>();
     private final List<VagaResponse> vagas = new ArrayList<>();
     private View tvNenhuma;
     private SwipeRefreshLayout swipeRefresh;
@@ -69,7 +67,7 @@ public class ListaCandidaturasFragment extends Fragment {
 
         RecyclerView rv = view.findViewById(R.id.rv_candidaturas);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new CandidaturasAdapter(requireContext(), exibidas, candidaturaId -> {
+        adapter = new CandidaturasAdapter(requireContext(), candidaturaId -> {
             Bundle args = new Bundle();
             args.putLong("candidaturaId", candidaturaId);
             Navigation.findNavController(view).navigate(R.id.action_listaCandidaturas_to_detalhes, args);
@@ -83,7 +81,7 @@ public class ListaCandidaturasFragment extends Fragment {
         if (vagaIdFixo > 0) {
             vagaIdSelecionada = vagaIdFixo;
             mostrarVagaFixa(view);
-            carregarCandidaturasPorVaga(view, vagaIdFixo);
+            carregarCandidaturas(view, vagaIdFixo);
         } else {
             mostrarSeletorVaga(view);
             carregarVagas(view);
@@ -92,7 +90,7 @@ public class ListaCandidaturasFragment extends Fragment {
 
     private void atualizar() {
         if (vagaIdSelecionada > 0) {
-            carregarCandidaturasPorVaga(requireView(), vagaIdSelecionada);
+            refreshCandidaturas(vagaIdSelecionada);
         } else {
             swipeRefresh.setRefreshing(false);
         }
@@ -105,7 +103,29 @@ public class ListaCandidaturasFragment extends Fragment {
         view.findViewById(R.id.til_vaga_selector).setVisibility(View.GONE);
     }
 
-    private void carregarCandidaturasPorVaga(View view, long vagaId) {
+    /** Carga inicial: cache primeiro, depois dado fresco. */
+    private void carregarCandidaturas(View view, long vagaId) {
+        DataCache.get().loadCandidaturas(requireContext(), vagaId,
+                cached -> {
+                    if (cached != null && isAdded()) {
+                        todas.clear();
+                        todas.addAll(cached);
+                        aplicarFiltro(filtroAtivo);
+                        atualizarNomeVaga(view, cached);
+                    }
+                },
+                fresh -> {
+                    if (!isAdded()) return;
+                    todas.clear();
+                    todas.addAll(fresh);
+                    aplicarFiltro(filtroAtivo);
+                    atualizarNomeVaga(view, fresh);
+                }
+        );
+    }
+
+    /** Refresh explícito: vai direto à API, sem cache, para poder parar o spinner em qualquer caso. */
+    private void refreshCandidaturas(long vagaId) {
         ApiClient.getService(requireContext()).candidatosPorVaga(vagaId)
                 .enqueue(new Callback<List<CandidaturaEmpresaResponse>>() {
                     @Override
@@ -114,14 +134,12 @@ public class ListaCandidaturasFragment extends Fragment {
                         if (!isAdded()) return;
                         swipeRefresh.setRefreshing(false);
                         if (r.isSuccessful() && r.body() != null) {
+                            DataCache.get().saveCandidaturas(requireContext(), vagaId, r.body());
                             todas.clear();
                             todas.addAll(r.body());
                             aplicarFiltro(filtroAtivo);
-
-                            if (!todas.isEmpty() && todas.get(0).tituloVaga != null) {
-                                TextView tvNomeVaga = view.findViewById(R.id.tv_nome_vaga);
-                                if (tvNomeVaga != null) tvNomeVaga.setText(todas.get(0).tituloVaga);
-                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Erro ao atualizar candidaturas", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -129,9 +147,16 @@ public class ListaCandidaturasFragment extends Fragment {
                     public void onFailure(@NonNull Call<List<CandidaturaEmpresaResponse>> c, @NonNull Throwable t) {
                         if (!isAdded()) return;
                         swipeRefresh.setRefreshing(false);
-                        Toast.makeText(requireContext(), "Erro ao carregar candidaturas", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Erro de conexão", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void atualizarNomeVaga(View view, List<CandidaturaEmpresaResponse> lista) {
+        if (!lista.isEmpty() && lista.get(0).tituloVaga != null) {
+            TextView tvNomeVaga = view.findViewById(R.id.tv_nome_vaga);
+            if (tvNomeVaga != null) tvNomeVaga.setText(lista.get(0).tituloVaga);
+        }
     }
 
     // ── Modo seletor ─────────────────────────────────────────────────────────
@@ -178,16 +203,15 @@ public class ListaCandidaturasFragment extends Fragment {
             VagaResponse selecionada = vagas.get(position);
             vagaIdSelecionada = selecionada.id;
             todas.clear();
-            exibidas.clear();
-            adapter.notifyDataSetChanged();
-            atualizarEstadoVazio();
-            carregarCandidaturasPorVaga(view, selecionada.id);
+            adapter.submitList(new ArrayList<>());
+            atualizarEstadoVazio(new ArrayList<>());
+            carregarCandidaturas(view, selecionada.id);
         });
 
         if (vagas.size() == 1) {
             actv.setText(titulos.get(0), false);
             vagaIdSelecionada = vagas.get(0).id;
-            carregarCandidaturasPorVaga(view, vagas.get(0).id);
+            carregarCandidaturas(view, vagas.get(0).id);
         } else if (vagas.isEmpty()) {
             Toast.makeText(requireContext(), "Nenhuma vaga cadastrada", Toast.LENGTH_SHORT).show();
         }
@@ -211,21 +235,20 @@ public class ListaCandidaturasFragment extends Fragment {
     }
 
     private void aplicarFiltro(@Nullable String status) {
-        exibidas.clear();
+        List<CandidaturaEmpresaResponse> exibidas;
         if (status == null) {
-            exibidas.addAll(todas);
+            exibidas = new ArrayList<>(todas);
         } else {
-            final String f = status;
-            exibidas.addAll(todas.stream()
-                    .filter(c -> f.equalsIgnoreCase(c.status))
-                    .collect(Collectors.toList()));
+            exibidas = todas.stream()
+                    .filter(c -> status.equalsIgnoreCase(c.status))
+                    .collect(Collectors.toList());
         }
-        adapter.notifyDataSetChanged();
-        atualizarEstadoVazio();
+        adapter.submitList(exibidas);
+        atualizarEstadoVazio(exibidas);
     }
 
-    private void atualizarEstadoVazio() {
+    private void atualizarEstadoVazio(List<?> lista) {
         if (tvNenhuma != null)
-            tvNenhuma.setVisibility(exibidas.isEmpty() ? View.VISIBLE : View.GONE);
+            tvNenhuma.setVisibility(lista.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

@@ -79,6 +79,7 @@ public interface ApiService {
             @Path("id") Long candidaturaId,
             @Path("statusId") Long statusId);
 
+
     // ── Lookups (públicos) ────────────────────────────────────────────────────
 
     @GET("api/lookup/vagas/tipos")

@@ -5,55 +5,23 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!--
-      MatchVagas Empresa — App Icon
-      Composição centrada para ícone redondo (adaptive icon, safe zone 21–87):
-        • Badge laranja com checkmark no topo  → "match/aprovação"
-        • Edifício branco com janelas abaixo   → "empresa"
-    -->
+    <!-- 15% de inset em cada lado → scale 70% ao redor do centro (54,54) -->
+    <group
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:pivotX="54"
+        android:pivotY="54">
 
-    <!-- ════════════════════════════════════
-         BADGE LARANJA — topo centrado
-         Centro (54, 34) | Raio 13dp
-         y: 21–47  x: 41–67  → dentro da safe zone
-         ════════════════════════════════════ -->
-    <path
-        android:fillColor="#FF6F00"
-        android:pathData="M 54,34 m -13,0 a 13,13 0 1,0 26,0 a 13,13 0 1,0 -26,0" />
+        <!-- M branco geométrico -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 28,78 L 28,36 L 54,52 L 80,36 L 80,78 L 70,78 L 70,44 L 54,62 L 38,44 L 38,78 Z" />
 
-    <!-- Checkmark branco no badge -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M 46.5,34 L 52,40.5 L 61.5,26" />
+        <!-- Ponto laranja — match point entre as pernas do M -->
+        <path
+            android:fillColor="#FF6F00"
+            android:pathData="M 54,72 m -5.5,0 a 5.5,5.5 0 1,0 11,0 a 5.5,5.5 0 1,0 -11,0" />
 
-    <!-- ════════════════════════════════════
-         EDIFÍCIO BRANCO
-         Body  x: 26–82  y: 50–87
-         Janelas + porta cortadas via evenOdd
-         ════════════════════════════════════ -->
-
-    <!-- Faixa do telhado — levemente mais larga que o corpo -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 22,54 L 22,49 Q 22,47 24,47 L 84,47 Q 86,47 86,49 L 86,54 Z" />
-
-    <!-- Corpo do edifício + janelas como recortes (evenOdd) -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="
-            M 26,87 L 26,54 L 82,54 L 82,87 Z
-
-            M 30,59 L 46,59 L 46,70 L 30,70 Z
-            M 62,59 L 78,59 L 78,70 L 62,70 Z
-
-            M 30,73 L 46,73 L 46,84 L 30,84 Z
-            M 62,73 L 78,73 L 78,84 L 62,84 Z
-
-            M 44,76 L 64,76 L 64,87 L 44,87 Z" />
+    </group>
 
 </vector>

@@ -5,8 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -15,11 +13,7 @@ import androidx.navigation.Navigation;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
-import com.edu.matchvagasempresas.network.ApiClient;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.edu.matchvagasempresas.network.DataCache;
 
 public class PerfilEmpresaFragment extends Fragment {
 
@@ -44,22 +38,10 @@ public class PerfilEmpresaFragment extends Fragment {
     }
 
     private void carregarPerfil(View view) {
-        ApiClient.getService(requireContext()).minhaEmpresa().enqueue(new Callback<EmpresaResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<EmpresaResponse> call,
-                                   @NonNull Response<EmpresaResponse> response) {
-                if (!isAdded()) return;
-                if (response.isSuccessful() && response.body() != null) {
-                    preencherDados(view, response.body());
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<EmpresaResponse> call, @NonNull Throwable t) {
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Erro ao carregar perfil", Toast.LENGTH_SHORT).show();
-            }
-        });
+        DataCache.get().loadEmpresa(requireContext(),
+                cached -> { if (cached != null && isAdded()) preencherDados(view, cached); },
+                fresh  -> { if (isAdded()) preencherDados(view, fresh); }
+        );
     }
 
     private void preencherDados(View view, EmpresaResponse e) {

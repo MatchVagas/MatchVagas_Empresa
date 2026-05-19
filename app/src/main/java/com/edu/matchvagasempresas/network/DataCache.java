@@ -3,6 +3,7 @@ package com.edu.matchvagasempresas.network;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.VagaResponse;
 import com.google.gson.Gson;
@@ -123,6 +124,51 @@ public class DataCache {
         String json = prefs(ctx).getString(KEY_EMPRESA, null);
         if (json == null) return null;
         return gson.fromJson(json, EmpresaResponse.class);
+    }
+
+    // ── Candidaturas ─────────────────────────────────────────────────────────
+
+    public void loadCandidaturas(Context ctx, long vagaId,
+                                 OnCached<List<CandidaturaEmpresaResponse>> onCached,
+                                 OnFresh<List<CandidaturaEmpresaResponse>> onFresh) {
+
+        List<CandidaturaEmpresaResponse> cached = readCandidaturas(ctx, vagaId);
+        if (onCached != null) onCached.onCached(cached);
+
+        ApiClient.getService(ctx).candidatosPorVaga(vagaId)
+                .enqueue(new retrofit2.Callback<List<CandidaturaEmpresaResponse>>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
+                                           retrofit2.Response<List<CandidaturaEmpresaResponse>> r) {
+                        if (r.isSuccessful() && r.body() != null) {
+                            saveCandidaturas(ctx, vagaId, r.body());
+                            if (onFresh != null) onFresh.onFresh(r.body());
+                        }
+                    }
+                    @Override
+                    public void onFailure(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
+                                          Throwable t) {}
+                });
+    }
+
+    public void saveCandidaturas(Context ctx, long vagaId,
+                                 List<CandidaturaEmpresaResponse> lista) {
+        prefs(ctx).edit()
+                .putString("candidaturas_" + vagaId, gson.toJson(lista))
+                .putLong("candidaturas_ts_" + vagaId, System.currentTimeMillis())
+                .apply();
+    }
+
+    public List<CandidaturaEmpresaResponse> readCandidaturas(Context ctx, long vagaId) {
+        String json = prefs(ctx).getString("candidaturas_" + vagaId, null);
+        if (json == null) return null;
+        java.lang.reflect.Type type =
+                new com.google.gson.reflect.TypeToken<List<CandidaturaEmpresaResponse>>(){}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public void invalidateCandidaturas(Context ctx, long vagaId) {
+        prefs(ctx).edit().remove("candidaturas_ts_" + vagaId).apply();
     }
 
     // ── Invalidação ───────────────────────────────────────────────────────────

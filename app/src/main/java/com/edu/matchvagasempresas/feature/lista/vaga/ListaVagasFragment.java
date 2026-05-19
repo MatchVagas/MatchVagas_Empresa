@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.VagasAdapter;
@@ -20,7 +21,6 @@ import com.edu.matchvagasempresas.model.VagaResponse;
 import com.edu.matchvagasempresas.network.ApiClient;
 import com.edu.matchvagasempresas.network.DataCache;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -30,7 +30,8 @@ import retrofit2.Response;
 public class ListaVagasFragment extends Fragment {
 
     private VagasAdapter adapter;
-    private final List<VagaResponse> vagas = new ArrayList<>();
+    private SwipeRefreshLayout swipeRefresh;
+    private View tvNenhumaVaga;
 
     @Nullable
     @Override
@@ -49,11 +50,16 @@ public class ListaVagasFragment extends Fragment {
         view.findViewById(R.id.fab_nova_vaga).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_listaVagas_to_cadastroVaga));
 
+        tvNenhumaVaga = view.findViewById(R.id.tv_nenhuma_vaga);
+
+        swipeRefresh = view.findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.primary, R.color.accent);
+        swipeRefresh.setOnRefreshListener(this::refreshVagas);
+
         RecyclerView rv = view.findViewById(R.id.rv_vagas);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new VagasAdapter(requireContext(), vagas, new VagasAdapter.OnVagaActionListener() {
-            @Override
-            public void onVagaClick(long vagaId) { }
+        adapter = new VagasAdapter(requireContext(), new VagasAdapter.OnVagaActionListener() {
+            @Override public void onVagaClick(long vagaId) { }
 
             @Override
             public void onCandidaturasClick(long vagaId) {
@@ -85,17 +91,45 @@ public class ListaVagasFragment extends Fragment {
         DataCache.get().loadVagas(requireContext(),
                 cached -> {
                     if (cached != null && isAdded()) {
-                        vagas.clear();
-                        vagas.addAll(cached);
-                        adapter.notifyDataSetChanged();
+                        adapter.submitList(cached);
+                        atualizarEstadoVazio(cached);
                     }
                 },
                 fresh -> {
                     if (!isAdded()) return;
-                    vagas.clear();
-                    vagas.addAll(fresh);
-                    adapter.notifyDataSetChanged();
+                    adapter.submitList(fresh);
+                    atualizarEstadoVazio(fresh);
                 }
         );
+    }
+
+    private void refreshVagas() {
+        ApiClient.getService(requireContext()).minhasVagas().enqueue(new Callback<List<VagaResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<VagaResponse>> call,
+                                   @NonNull Response<List<VagaResponse>> r) {
+                if (!isAdded()) return;
+                swipeRefresh.setRefreshing(false);
+                if (r.isSuccessful() && r.body() != null) {
+                    DataCache.get().saveVagas(requireContext(), r.body());
+                    adapter.submitList(r.body());
+                    atualizarEstadoVazio(r.body());
+                } else {
+                    Toast.makeText(requireContext(), "Erro ao atualizar vagas", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<VagaResponse>> call, @NonNull Throwable t) {
+                if (!isAdded()) return;
+                swipeRefresh.setRefreshing(false);
+                Toast.makeText(requireContext(), "Erro de conexão", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void atualizarEstadoVazio(List<?> lista) {
+        if (tvNenhumaVaga != null)
+            tvNenhumaVaga.setVisibility(lista == null || lista.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

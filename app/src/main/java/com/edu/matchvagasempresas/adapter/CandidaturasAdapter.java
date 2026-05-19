@@ -8,12 +8,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapter.ViewHolder> {
 
@@ -22,20 +25,46 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
     }
 
     private final Context context;
-    private final List<CandidaturaEmpresaResponse> candidaturas;
+    private final List<CandidaturaEmpresaResponse> items = new ArrayList<>();
     private final OnCandidaturaClickListener listener;
 
-    public CandidaturasAdapter(Context context, List<CandidaturaEmpresaResponse> candidaturas,
-                               OnCandidaturaClickListener listener) {
+    public CandidaturasAdapter(Context context, OnCandidaturaClickListener listener) {
         this.context = context;
-        this.candidaturas = candidaturas;
         this.listener = listener;
         setHasStableIds(true);
     }
 
+    public void submitList(List<CandidaturaEmpresaResponse> newList) {
+        List<CandidaturaEmpresaResponse> oldList = new ArrayList<>(items);
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override public int getOldListSize() { return oldList.size(); }
+            @Override public int getNewListSize() { return newList.size(); }
+
+            @Override
+            public boolean areItemsTheSame(int o, int n) {
+                Long oid = oldList.get(o).id;
+                Long nid = newList.get(n).id;
+                return oid != null && oid.equals(nid);
+            }
+
+            @Override
+            public boolean areContentsTheSame(int o, int n) {
+                CandidaturaEmpresaResponse oc = oldList.get(o);
+                CandidaturaEmpresaResponse nc = newList.get(n);
+                return Objects.equals(oc.status, nc.status)
+                    && Objects.equals(oc.nomeCandidato, nc.nomeCandidato)
+                    && Objects.equals(oc.tituloVaga, nc.tituloVaga)
+                    && Objects.equals(oc.dataCandidatura, nc.dataCandidatura);
+            }
+        });
+        items.clear();
+        items.addAll(newList);
+        result.dispatchUpdatesTo(this);
+    }
+
     @Override
     public long getItemId(int position) {
-        CandidaturaEmpresaResponse c = candidaturas.get(position);
+        CandidaturaEmpresaResponse c = items.get(position);
         return c.id != null ? c.id : position;
     }
 
@@ -48,7 +77,7 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
-        CandidaturaEmpresaResponse c = candidaturas.get(position);
+        CandidaturaEmpresaResponse c = items.get(position);
 
         String nome = c.nomeCandidato != null ? c.nomeCandidato : "Candidato";
         String[] partes = nome.split(" ");
@@ -101,7 +130,7 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
 
     @Override
     public int getItemCount() {
-        return candidaturas != null ? candidaturas.size() : 0;
+        return items.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -111,11 +140,11 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
         ViewHolder(View view) {
             super(view);
             viewStatusStripe = view.findViewById(R.id.view_status_stripe);
-            tvIniciais = view.findViewById(R.id.tv_iniciais);
-            tvNome = view.findViewById(R.id.tv_nome_candidato);
+            tvIniciais   = view.findViewById(R.id.tv_iniciais);
+            tvNome       = view.findViewById(R.id.tv_nome_candidato);
             tvTituloVaga = view.findViewById(R.id.tv_titulo_vaga);
-            tvData = view.findViewById(R.id.tv_data_candidatura);
-            tvStatus = view.findViewById(R.id.tv_status);
+            tvData       = view.findViewById(R.id.tv_data_candidatura);
+            tvStatus     = view.findViewById(R.id.tv_status);
         }
     }
 }

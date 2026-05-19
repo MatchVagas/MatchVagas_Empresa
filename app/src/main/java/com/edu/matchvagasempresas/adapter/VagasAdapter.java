@@ -7,12 +7,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.model.VagaResponse;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> {
 
@@ -24,19 +27,49 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
     }
 
     private final Context context;
-    private final List<VagaResponse> vagas;
+    private final List<VagaResponse> items = new ArrayList<>();
     private final OnVagaActionListener listener;
 
-    public VagasAdapter(Context context, List<VagaResponse> vagas, OnVagaActionListener listener) {
+    public VagasAdapter(Context context, OnVagaActionListener listener) {
         this.context = context;
-        this.vagas = vagas;
         this.listener = listener;
         setHasStableIds(true);
     }
 
+    public void submitList(List<VagaResponse> newList) {
+        List<VagaResponse> oldList = new ArrayList<>(items);
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override public int getOldListSize() { return oldList.size(); }
+            @Override public int getNewListSize() { return newList.size(); }
+
+            @Override
+            public boolean areItemsTheSame(int o, int n) {
+                Long oid = oldList.get(o).id;
+                Long nid = newList.get(n).id;
+                return oid != null && oid.equals(nid);
+            }
+
+            @Override
+            public boolean areContentsTheSame(int o, int n) {
+                VagaResponse ov = oldList.get(o);
+                VagaResponse nv = newList.get(n);
+                return Objects.equals(ov.titulo, nv.titulo)
+                    && Objects.equals(ov.statusDescricao, nv.statusDescricao)
+                    && Objects.equals(ov.salarioMinimo, nv.salarioMinimo)
+                    && Objects.equals(ov.salarioMaximo, nv.salarioMaximo)
+                    && Objects.equals(ov.dataExpiracao, nv.dataExpiracao)
+                    && Objects.equals(ov.modalidadeDescricao, nv.modalidadeDescricao)
+                    && Objects.equals(ov.areaAtuacao, nv.areaAtuacao);
+            }
+        });
+        items.clear();
+        items.addAll(newList);
+        result.dispatchUpdatesTo(this);
+    }
+
     @Override
     public long getItemId(int position) {
-        VagaResponse v = vagas.get(position);
+        VagaResponse v = items.get(position);
         return v.id != null ? v.id : position;
     }
 
@@ -49,7 +82,7 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
-        VagaResponse v = vagas.get(position);
+        VagaResponse v = items.get(position);
         h.tvTitulo.setText(v.titulo);
         h.tvArea.setText(v.areaAtuacao != null ? v.areaAtuacao : "");
         h.tvTipo.setText(v.tipoVagaDescricao != null ? v.tipoVagaDescricao : "");
@@ -94,7 +127,7 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return vagas != null ? vagas.size() : 0;
+        return items.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -104,18 +137,18 @@ public class VagasAdapter extends RecyclerView.Adapter<VagasAdapter.ViewHolder> 
 
         ViewHolder(View view) {
             super(view);
-            tvTitulo       = view.findViewById(R.id.tv_titulo);
-            tvArea         = view.findViewById(R.id.tv_area);
-            tvTipo         = view.findViewById(R.id.tv_tipo);
-            tvModalidade   = view.findViewById(R.id.tv_modalidade);
-            tvSalario      = view.findViewById(R.id.tv_salario);
-            tvIdade        = view.findViewById(R.id.tv_idade);
-            tvCandidaturas = view.findViewById(R.id.tv_candidaturas);
+            tvTitulo        = view.findViewById(R.id.tv_titulo);
+            tvArea          = view.findViewById(R.id.tv_area);
+            tvTipo          = view.findViewById(R.id.tv_tipo);
+            tvModalidade    = view.findViewById(R.id.tv_modalidade);
+            tvSalario       = view.findViewById(R.id.tv_salario);
+            tvIdade         = view.findViewById(R.id.tv_idade);
+            tvCandidaturas  = view.findViewById(R.id.tv_candidaturas);
             tvDataExpiracao = view.findViewById(R.id.tv_data_expiracao);
-            tvStatus       = view.findViewById(R.id.tv_status);
+            tvStatus        = view.findViewById(R.id.tv_status);
             btnCandidaturas = view.findViewById(R.id.btn_candidaturas);
-            btnEditar      = view.findViewById(R.id.btn_editar);
-            btnGerenciar   = view.findViewById(R.id.btn_gerenciar);
+            btnEditar       = view.findViewById(R.id.btn_editar);
+            btnGerenciar    = view.findViewById(R.id.btn_gerenciar);
         }
     }
 }

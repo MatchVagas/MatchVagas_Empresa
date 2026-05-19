@@ -26,7 +26,6 @@ import com.edu.matchvagasempresas.network.ApiClient;
 import com.edu.matchvagasempresas.network.DataCache;
 import com.edu.matchvagasempresas.util.SessionManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -36,7 +35,6 @@ import retrofit2.Response;
 public class DashboardFragment extends Fragment {
 
     private VagasAdapter adapter;
-    private final List<VagaResponse> vagas = new ArrayList<>();
     private View rootView;
 
     @Nullable
@@ -94,7 +92,7 @@ public class DashboardFragment extends Fragment {
     private void setupVagasRecentes(View view) {
         RecyclerView rv = view.findViewById(R.id.rv_vagas_recentes);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new VagasAdapter(requireContext(), vagas, new VagasAdapter.OnVagaActionListener() {
+        adapter = new VagasAdapter(requireContext(), new VagasAdapter.OnVagaActionListener() {
             @Override
             public void onVagaClick(long vagaId) {
                 Bundle args = new Bundle();
@@ -131,9 +129,7 @@ public class DashboardFragment extends Fragment {
         long expiradas = all.stream().filter(v -> isExpirada(v.statusDescricao)).count();
         setText(R.id.tv_total_vagas,     String.valueOf(ativas));
         setText(R.id.tv_vagas_expiradas, String.valueOf(expiradas));
-        vagas.clear();
-        vagas.addAll(all.subList(0, Math.min(3, all.size())));
-        adapter.notifyDataSetChanged();
+        adapter.submitList(all.subList(0, Math.min(3, all.size())));
     }
 
     // ── Candidaturas ──────────────────────────────────────────────────────────

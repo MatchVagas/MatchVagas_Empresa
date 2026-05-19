@@ -36,15 +36,14 @@ public class ApiClient {
                 .readTimeout(READ_TIMEOUT,    TimeUnit.SECONDS)
                 .writeTimeout(WRITE_TIMEOUT,  TimeUnit.SECONDS)
                 .cache(new Cache(new File(context.getCacheDir(), "http_cache"), CACHE_SIZE))
+                // Application interceptor: adiciona o token nas chamadas ao nosso backend.
                 .addInterceptor(chain -> {
                     String token = session.getToken();
                     Request original = chain.request();
-                    Request request = token != null
-                            ? original.newBuilder()
-                                    .header("Authorization", "Bearer " + token)
-                                    .build()
-                            : original;
-                    return chain.proceed(request);
+                    if (token == null) return chain.proceed(original);
+                    return chain.proceed(original.newBuilder()
+                            .header("Authorization", "Bearer " + token)
+                            .build());
                 });
 
         if (BuildConfig.DEBUG) {
