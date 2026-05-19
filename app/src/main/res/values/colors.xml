@@ -17,6 +17,8 @@
     <color name="warning">#F57F17</color>
     <color name="status_ativa">#2E7D32</color>
     <color name="status_inativa">#757575</color>
+    <color name="status_reprovado">#B00020</color>
+    <color name="status_analise">#FF6F00</color>
     <color name="status_expirada">#B00020</color>
     <color name="status_pendente">#F57F17</color>
     <color name="status_aprovado">#1565C0</color>

@@ -4,6 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.card.MaterialCardView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,8 +19,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.adapter.VagasAdapter;
+import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.model.EmpresaResponse;
+import com.edu.matchvagasempresas.model.VagaResponse;
+import com.edu.matchvagasempresas.network.ApiClient;
+import com.edu.matchvagasempresas.network.DataCache;
+import com.edu.matchvagasempresas.util.SessionManager;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DashboardFragment extends Fragment {
+
+    private VagasAdapter adapter;
+    private View rootView;
 
     @Nullable
     @Override
@@ -28,45 +47,151 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        rootView = view;
+
+        // Exibe nome do cache enquanto a API carrega
+        SessionManager session = new SessionManager(requireContext());
+        setText(R.id.tv_nome_empresa, session.getNomeEmpresa());
+
+        // Banner de empresa pendente
+        MaterialCardView cardPendente = view.findViewById(R.id.card_pendente);
+        if (cardPendente != null && !session.isEmpresaAprovada() && !session.getStatusEmpresa().isEmpty()) {
+            cardPendente.setVisibility(View.VISIBLE);
+        }
 
         view.findViewById(R.id.tv_ver_todas).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_dashboard_to_listaVagas));
-
         view.findViewById(R.id.iv_logout).setOnClickListener(v -> confirmLogout(v));
 
         setupVagasRecentes(view);
+        carregarEmpresaComCache();
+        carregarVagasComCache();
+        carregarCandidaturas();
     }
+
+    // ── Empresa ──────────────────────────────────────────────────────────────
+
+    private void carregarEmpresaComCache() {
+        DataCache.get().loadEmpresa(requireContext(),
+                cached -> { if (cached != null && isAdded()) aplicarEmpresa(cached); },
+                fresh  -> { if (isAdded()) aplicarEmpresa(fresh); }
+        );
+    }
+
+    private void aplicarEmpresa(EmpresaResponse e) {
+        setText(R.id.tv_nome_empresa, e.nomeFantasia);
+        setText(R.id.tv_cnpj,        formatarCnpj(e.cnpj));
+        new SessionManager(requireContext()).saveEmpresa(e.id, e.nomeFantasia, e.status);
+        MaterialCardView card = rootView.findViewById(R.id.card_pendente);
+        if (card != null)
+            card.setVisibility("PENDENTE".equalsIgnoreCase(e.status) ? View.VISIBLE : View.GONE);
+    }
+
+    // ── Vagas ─────────────────────────────────────────────────────────────────
 
     private void setupVagasRecentes(View view) {
         RecyclerView rv = view.findViewById(R.id.rv_vagas_recentes);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rv.setAdapter(new VagasAdapter(requireContext(), 3, new VagasAdapter.OnVagaActionListener() {
+        adapter = new VagasAdapter(requireContext(), new VagasAdapter.OnVagaActionListener() {
             @Override
-            public void onVagaClick(int position) {
-                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaCandidaturas);
+            public void onVagaClick(long vagaId) {
+                Bundle args = new Bundle();
+                args.putLong("vagaId", vagaId);
+                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaCandidaturas, args);
             }
             @Override
-            public void onCandidaturasClick(int position) {
-                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaCandidaturas);
+            public void onCandidaturasClick(long vagaId) {
+                Bundle args = new Bundle();
+                args.putLong("vagaId", vagaId);
+                Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaCandidaturas, args);
             }
             @Override
-            public void onEditarClick(int position) {
+            public void onEditarClick(long vagaId) {
                 Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaVagas);
             }
             @Override
-            public void onGerenciarClick(int position) {
+            public void onGerenciarClick(long vagaId) {
                 Navigation.findNavController(view).navigate(R.id.action_dashboard_to_listaVagas);
             }
-        }));
+        });
+        rv.setAdapter(adapter);
     }
+
+    private void carregarVagasComCache() {
+        DataCache.get().loadVagas(requireContext(),
+                cached -> { if (cached != null && isAdded()) aplicarVagas(cached); },
+                fresh  -> { if (isAdded()) aplicarVagas(fresh); }
+        );
+    }
+
+    private void aplicarVagas(List<VagaResponse> all) {
+        long ativas    = all.stream().filter(v -> isAtiva(v.statusDescricao)).count();
+        long expiradas = all.stream().filter(v -> isExpirada(v.statusDescricao)).count();
+        setText(R.id.tv_total_vagas,     String.valueOf(ativas));
+        setText(R.id.tv_vagas_expiradas, String.valueOf(expiradas));
+        adapter.submitList(all.subList(0, Math.min(3, all.size())));
+    }
+
+    // ── Candidaturas ──────────────────────────────────────────────────────────
+
+    private void carregarCandidaturas() {
+        ApiClient.getService(requireContext()).candidaturasEmpresa()
+                .enqueue(new Callback<List<CandidaturaEmpresaResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<CandidaturaEmpresaResponse>> call,
+                                           @NonNull Response<List<CandidaturaEmpresaResponse>> r) {
+                        if (!isAdded()) return;
+                        if (r.isSuccessful() && r.body() != null) {
+                            setText(R.id.tv_total_candidaturas, String.valueOf(r.body().size()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<List<CandidaturaEmpresaResponse>> call, @NonNull Throwable t) {}
+                });
+    }
+
+    // ── Logout ────────────────────────────────────────────────────────────────
 
     private void confirmLogout(View anchor) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Sair")
                 .setMessage("Deseja encerrar a sessão?")
-                .setPositiveButton("Sair", (d, w) ->
-                        Navigation.findNavController(anchor).navigate(R.id.action_logout))
+                .setPositiveButton("Sair", (d, w) -> {
+                    new SessionManager(requireContext()).clear();
+                    DataCache.get().clear(requireContext());
+                    ApiClient.reset();
+                    Navigation.findNavController(anchor).navigate(R.id.action_logout);
+                })
                 .setNegativeButton(R.string.btn_cancelar, null)
                 .show();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private void setText(int id, String value) {
+        if (rootView == null) return;
+        TextView tv = rootView.findViewById(id);
+        if (tv != null) tv.setText(value != null ? value : "");
+    }
+
+    private boolean isAtiva(String status) {
+        return status != null && (status.equalsIgnoreCase("ATIVA") || status.equalsIgnoreCase("Ativa"));
+    }
+
+    private boolean isExpirada(String status) {
+        return status != null && (
+                status.equalsIgnoreCase("EXPIRADA") ||
+                status.equalsIgnoreCase("ENCERRADA") ||
+                status.equalsIgnoreCase("INATIVA"));
+    }
+
+    private String formatarCnpj(String cnpj) {
+        if (cnpj == null) return "";
+        String d = cnpj.replaceAll("[^0-9]", "");
+        if (d.length() == 14)
+            return d.substring(0,2)+"."+d.substring(2,5)+"."+d.substring(5,8)
+                    +"/"+d.substring(8,12)+"-"+d.substring(12);
+        return cnpj;
     }
 }

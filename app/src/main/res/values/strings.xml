@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Matchvagas Empresas</string>
+    <string name="app_name">MatchEmpresas</string>
 
     <!-- Login -->
     <string name="login_subtitle">Gerencie suas vagas e candidaturas</string>

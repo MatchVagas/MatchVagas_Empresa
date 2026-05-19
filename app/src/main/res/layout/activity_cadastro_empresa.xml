@@ -109,7 +109,8 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/hint_confirmar_senha"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        app:endIconMode="password_toggle">
+                        app:endIconMode="password_toggle"
+                        android:layout_marginBottom="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/et_confirmar_senha"
@@ -117,6 +118,24 @@
                             android:layout_height="wrap_content"
                             android:inputType="textPassword"
                             android:imeOptions="actionNext" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_data_nascimento"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Data de Nascimento"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        app:endIconMode="custom"
+                        app:endIconDrawable="@drawable/ic_calendar">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_data_nascimento"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:focusable="false"
+                            android:hint="dd/mm/aaaa" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -157,7 +176,7 @@
                             android:id="@+id/et_cnpj"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="number"
+                            android:inputType="phone"
                             android:maxLength="18"
                             android:imeOptions="actionNext" />
                     </com.google.android.material.textfield.TextInputLayout>

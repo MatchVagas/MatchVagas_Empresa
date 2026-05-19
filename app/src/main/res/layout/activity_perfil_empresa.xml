@@ -67,19 +67,17 @@
                         android:id="@+id/tv_nome_fantasia"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Empresa XYZ"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
                         android:textColor="@color/white"
-                        android:layout_marginBottom="4dp" />
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tv_ramo_atuacao"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Tecnologia da Informação"
-                        android:textSize="13sp"
-                        android:textColor="#FFFFFFCC" />
+                        android:textColor="#FFFFFFCC"
+                        android:textSize="13sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -142,14 +140,14 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginBottom="2dp" />
+
                     <TextView
                         android:id="@+id/tv_razao_social"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Empresa XYZ Soluções Tecnológicas Ltda."
-                        android:textSize="15sp"
+                        android:layout_marginBottom="14dp"
                         android:textColor="@color/text_primary"
-                        android:layout_marginBottom="14dp" />
+                        android:textSize="15sp" />
 
                     <!-- Porte -->
                     <TextView
@@ -159,14 +157,14 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginBottom="2dp" />
+
                     <TextView
                         android:id="@+id/tv_porte"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Médio Porte"
-                        android:textSize="15sp"
+                        android:layout_marginBottom="14dp"
                         android:textColor="@color/text_primary"
-                        android:layout_marginBottom="14dp" />
+                        android:textSize="15sp" />
 
                     <!-- Descrição -->
                     <TextView
@@ -176,13 +174,13 @@
                         android:textSize="12sp"
                         android:textColor="@color/text_secondary"
                         android:layout_marginBottom="2dp" />
+
                     <TextView
                         android:id="@+id/tv_descricao"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Empresa especializada em desenvolvimento de soluções tecnológicas inovadoras para o mercado corporativo."
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary" />
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

@@ -19,10 +19,15 @@
             app:title="@string/title_detalhes_candidatura" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -135,6 +140,23 @@
                         android:layout_height="wrap_content"
                         android:text="(11) 99999-9999"
                         android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ENDEREÇO"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tv_endereco"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -152,154 +174,371 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:orientation="vertical">
 
-                    <!-- Cabeçalho -->
+                    <!-- Cabeçalho colorido -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="4dp">
+                        android:background="@color/primary_light"
+                        android:padding="16dp">
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Perfil Compartilhado"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/primary" />
+                            android:orientation="vertical">
 
-                        <TextView
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Perfil Compartilhado"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary_dark" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Informações autorizadas pelo candidato"
+                                android:textSize="11sp"
+                                android:textColor="@color/primary"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Compartilhado pelo candidato"
-                            android:textSize="11sp"
-                            android:textColor="@color/text_secondary" />
+                            app:cardCornerRadius="12dp"
+                            app:cardBackgroundColor="@color/primary"
+                            app:cardElevation="0dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Perfil"
+                                android:textSize="11sp"
+                                android:textColor="@color/white"
+                                android:textStyle="bold"
+                                android:paddingLeft="10dp"
+                                android:paddingRight="10dp"
+                                android:paddingTop="4dp"
+                                android:paddingBottom="4dp" />
+                        </com.google.android.material.card.MaterialCardView>
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/divider"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Escolaridade -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ESCOLARIDADE"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:id="@+id/tv_escolaridade"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
+                        android:orientation="vertical"
+                        android:padding="20dp">
 
-                    <!-- Área de Formação -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ÁREA DE FORMAÇÃO"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="4dp" />
+                        <!-- ── Seção: Formação Acadêmica ── -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
 
-                    <TextView
-                        android:id="@+id/tv_area_formacao"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="14dp"
+                                android:background="@color/primary"
+                                android:layout_marginEnd="8dp" />
 
-                    <!-- Experiência -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="EXPERIÊNCIA"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="4dp" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Formação Acadêmica"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary" />
+                        </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_experiencia"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
+                        <!-- Escolaridade -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp">
 
-                    <!-- Habilidades -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="HABILIDADES"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="4dp" />
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="match_parent"
+                                android:background="@color/primary_light"
+                                android:layout_marginEnd="12dp" />
 
-                    <TextView
-                        android:id="@+id/tv_habilidades"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="16dp" />
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
 
-                    <!-- Resumo Profissional -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="RESUMO PROFISSIONAL"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="4dp" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Escolaridade"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_secondary"
+                                    android:layout_marginBottom="2dp" />
 
-                    <TextView
-                        android:id="@+id/tv_resumo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:lineSpacingMultiplier="1.4"
-                        android:layout_marginBottom="20dp" />
+                                <TextView
+                                    android:id="@+id/tv_escolaridade"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="14sp"
+                                    android:textColor="@color/text_primary" />
+                            </LinearLayout>
+                        </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/divider"
-                        android:layout_marginBottom="16dp" />
+                        <!-- Área de Formação -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
 
-                    <!-- Botão Currículo -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_ver_curriculo"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Ver Currículo em PDF"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        app:cornerRadius="8dp"
-                        app:icon="@drawable/ic_document"
-                        app:iconGravity="textStart"
-                        app:iconTint="@color/primary" />
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="match_parent"
+                                android:background="@color/primary_light"
+                                android:layout_marginEnd="12dp" />
 
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Área de Formação"
+                                    android:textSize="11sp"
+                                    android:textColor="@color/text_secondary"
+                                    android:layout_marginBottom="2dp" />
+
+                                <TextView
+                                    android:id="@+id/tv_area_formacao"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="14sp"
+                                    android:textColor="@color/text_primary" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- ── Seção: Experiência Profissional ── -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="14dp"
+                                android:background="@color/accent"
+                                android:layout_marginEnd="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Experiência Profissional"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/accent" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
+
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="match_parent"
+                                android:background="@color/chip_bg"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:id="@+id/tv_experiencia"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:lineSpacingMultiplier="1.4" />
+                        </LinearLayout>
+
+                        <!-- ── Seção: Resumo Profissional ── -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="14dp"
+                                android:background="@color/primary"
+                                android:layout_marginEnd="8dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Resumo Profissional"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/primary" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
+
+                            <View
+                                android:layout_width="3dp"
+                                android:layout_height="match_parent"
+                                android:background="@color/primary_light"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:id="@+id/tv_resumo"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:lineSpacingMultiplier="1.4" />
+                        </LinearLayout>
+
+                        <!-- ── Disponibilidade + Pretensão (lado a lado) ── -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="20dp">
+
+                            <!-- Disponibilidade -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:background="@color/primary_light"
+                                android:padding="12dp"
+                                android:layout_marginEnd="8dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="6dp">
+
+                                    <ImageView
+                                        android:layout_width="14dp"
+                                        android:layout_height="14dp"
+                                        android:src="@drawable/ic_calendar"
+                                        android:tint="@color/primary"
+                                        android:layout_marginEnd="5dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Disponibilidade"
+                                        android:textSize="10sp"
+                                        android:textColor="@color/primary"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_disponibilidade"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="13sp"
+                                    android:textColor="@color/text_primary" />
+                            </LinearLayout>
+
+                            <!-- Pretensão Salarial -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:background="@color/primary_light"
+                                android:padding="12dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginBottom="6dp">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="R$"
+                                        android:textSize="12sp"
+                                        android:textColor="@color/success"
+                                        android:textStyle="bold"
+                                        android:layout_marginEnd="5dp" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Pretensão"
+                                        android:textSize="10sp"
+                                        android:textColor="@color/primary"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/tv_pretensao"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="13sp"
+                                    android:textColor="@color/text_primary" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/divider"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Botão Currículo -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_ver_curriculo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Baixar Currículo"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="8dp"
+                            app:icon="@drawable/ic_document"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/primary" />
+
+                        <TextView
+                            android:id="@+id/tv_curriculo_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -439,4 +678,5 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

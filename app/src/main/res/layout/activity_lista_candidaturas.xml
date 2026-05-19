@@ -19,8 +19,54 @@
             app:title="@string/title_lista_candidaturas"
             app:navigationIcon="@drawable/ic_arrow_back" />
 
-        <!-- Vaga selecionada -->
+        <!-- Seletor de vaga — visível quando nenhuma vaga foi pré-selecionada -->
         <LinearLayout
+            android:id="@+id/til_vaga_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@color/primary"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SELECIONE A VAGA"
+                android:textSize="10sp"
+                android:textColor="#FFFFFFAA"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="6dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
+                app:boxBackgroundColor="@color/white"
+                app:boxStrokeColor="@color/primary"
+                app:hintTextColor="@color/text_secondary"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusBottomEnd="8dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/actv_vaga_selector"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Selecione uma vaga"
+                    android:inputType="none"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- Vaga pré-selecionada (vinda da tela de vagas) -->
+        <LinearLayout
+            android:id="@+id/layout_vaga_fixa"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -29,7 +75,8 @@
             android:paddingEnd="20dp"
             android:paddingTop="4dp"
             android:paddingBottom="12dp"
-            android:background="@color/primary">
+            android:background="@color/primary"
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="16dp"
@@ -117,21 +164,53 @@
         </HorizontalScrollView>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_candidaturas"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:clipToPadding="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <TextView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_candidaturas"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:clipToPadding="false" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <LinearLayout
         android:id="@+id/tv_nenhuma_candidatura"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/nenhuma_candidatura"
-        android:textColor="@color/text_secondary"
-        android:textSize="16sp"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:src="@drawable/ic_people"
+            android:tint="@color/text_hint"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nenhuma_candidatura"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tente ajustar o filtro de status"
+            android:textColor="@color/text_hint"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
