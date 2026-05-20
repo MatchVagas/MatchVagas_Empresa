@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -88,12 +89,17 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_nova_vaga"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/title_cadastro_vaga"
-        app:srcCompat="@drawable/ic_add" />
+        android:textColor="@color/background"
+        app:backgroundTint="@color/primary_dark"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/background"
+        app:srcCompat="@drawable/ic_add"
+        tools:text="@string/title_cadastro_vaga" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -124,13 +124,44 @@
                     android:clickable="true"
                     android:focusable="true" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_login"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:text="@string/btn_entrar"
-                    android:textSize="16sp"
-                    app:cornerRadius="8dp" />
+                    android:layout_height="52dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_login"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:text="@string/btn_entrar"
+                        android:textSize="16sp"
+                        app:cornerRadius="8dp" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_loading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="10dp"
+                            app:indicatorColor="@color/design_default_color_primary"
+                            app:trackThickness="3dp"
+                            app:indicatorSize="22dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Entrando…"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </FrameLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

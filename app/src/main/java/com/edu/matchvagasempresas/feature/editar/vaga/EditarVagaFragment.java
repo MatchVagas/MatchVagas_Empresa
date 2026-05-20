@@ -2,6 +2,8 @@ package com.edu.matchvagasempresas.feature.editar.vaga;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -25,6 +28,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -37,9 +43,13 @@ import retrofit2.Response;
 public class EditarVagaFragment extends Fragment {
 
     private AutoCompleteTextView actvTipo, actvModalidade, actvEscolaridade, actvCidade;
+    private TextInputLayout tilTitulo, tilArea, tilDesc, tilTipo, tilModalidade,
+            tilRequisitos, tilEscolaridade, tilCidade;
+    private TextInputEditText etTitulo, etArea, etDesc, etReq;
     private VagaResponse vagaAtual;
     private long vagaId;
     private boolean lookupsProntos = false;
+    private AlertDialog loadingDialog;
 
     @Nullable
     @Override
@@ -60,6 +70,21 @@ public class EditarVagaFragment extends Fragment {
         actvEscolaridade = view.findViewById(R.id.actv_escolaridade);
         actvCidade = view.findViewById(R.id.actv_cidade);
 
+        tilTitulo = view.findViewById(R.id.til_titulo);
+        tilArea = view.findViewById(R.id.til_area_atuacao);
+        tilDesc = view.findViewById(R.id.til_descricao);
+        tilTipo = view.findViewById(R.id.til_tipo_vaga);
+        tilModalidade = view.findViewById(R.id.til_modalidade);
+        tilRequisitos = view.findViewById(R.id.til_requisitos);
+        tilEscolaridade = view.findViewById(R.id.til_escolaridade);
+        tilCidade = view.findViewById(R.id.til_cidade);
+
+        etTitulo = view.findViewById(R.id.et_titulo);
+        etArea = view.findViewById(R.id.et_area_atuacao);
+        etDesc = view.findViewById(R.id.et_descricao);
+        etReq = view.findViewById(R.id.et_requisitos);
+
+        setupErrorClearing();
         setupDatePicker(view);
 
         vagaId = getArguments() != null ? getArguments().getLong("vagaId", -1) : -1;
@@ -68,6 +93,27 @@ public class EditarVagaFragment extends Fragment {
         if (vagaId > 0) carregarVaga(view, vagaId);
 
         view.findViewById(R.id.btn_atualizar).setOnClickListener(v -> atualizarVaga(view, v));
+    }
+
+    private void setupErrorClearing() {
+        clearOnType(etTitulo, tilTitulo);
+        clearOnType(etArea, tilArea);
+        clearOnType(etDesc, tilDesc);
+        clearOnType(etReq, tilRequisitos);
+        actvTipo.setOnItemClickListener((p, v, i, id) -> tilTipo.setError(null));
+        actvModalidade.setOnItemClickListener((p, v, i, id) -> tilModalidade.setError(null));
+        actvEscolaridade.setOnItemClickListener((p, v, i, id) -> tilEscolaridade.setError(null));
+        actvCidade.setOnItemClickListener((p, v, i, id) -> tilCidade.setError(null));
+    }
+
+    private void clearOnType(TextInputEditText et, TextInputLayout til) {
+        et.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                til.setError(null);
+            }
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void carregarLookups(View view) {
@@ -105,7 +151,7 @@ public class EditarVagaFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<VagaResponse> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Erro ao carregar vaga", Toast.LENGTH_SHORT).show();
+                showErroDialog(buildErroConexao(t));
             }
         });
     }
@@ -137,31 +183,29 @@ public class EditarVagaFragment extends Fragment {
     private void atualizarVaga(View view, View btn) {
         if (vagaAtual == null || vagaId <= 0) return;
 
-        TextInputEditText etTitulo  = view.findViewById(R.id.et_titulo);
-        TextInputEditText etArea    = view.findViewById(R.id.et_area_atuacao);
-        TextInputEditText etDesc    = view.findViewById(R.id.et_descricao);
-        TextInputEditText etReq     = view.findViewById(R.id.et_requisitos);
-        TextInputEditText etBenef   = view.findViewById(R.id.et_beneficios);
-        TextInputEditText etSalMin  = view.findViewById(R.id.et_salario_min);
-        TextInputEditText etSalMax  = view.findViewById(R.id.et_salario_max);
-        TextInputEditText etCarga   = view.findViewById(R.id.et_carga_horaria);
-        TextInputEditText etNVagas  = view.findViewById(R.id.et_num_vagas);
-        TextInputEditText etIdMin   = view.findViewById(R.id.et_idade_min);
-        TextInputEditText etIdMax   = view.findViewById(R.id.et_idade_max);
-        TextInputEditText etData    = view.findViewById(R.id.et_data_expiracao);
+        if (!validarFormulario()) return;
+
+        TextInputEditText etBenef  = view.findViewById(R.id.et_beneficios);
+        TextInputEditText etSalMin = view.findViewById(R.id.et_salario_min);
+        TextInputEditText etSalMax = view.findViewById(R.id.et_salario_max);
+        TextInputEditText etCarga  = view.findViewById(R.id.et_carga_horaria);
+        TextInputEditText etNVagas = view.findViewById(R.id.et_num_vagas);
+        TextInputEditText etIdMin  = view.findViewById(R.id.et_idade_min);
+        TextInputEditText etIdMax  = view.findViewById(R.id.et_idade_max);
+        TextInputEditText etData   = view.findViewById(R.id.et_data_expiracao);
 
         VagaRequest req = new VagaRequest();
         req.empresaId    = vagaAtual.empresaId;
         req.titulo       = getText(etTitulo);
-        req.descricao    = getText(etDesc).isEmpty()  ? vagaAtual.descricao  : getText(etDesc);
-        req.requisitos   = getText(etReq).isEmpty()   ? vagaAtual.requisitos : getText(etReq);
+        req.descricao    = getText(etDesc);
+        req.requisitos   = getText(etReq);
         req.areaAtuacao  = getText(etArea);
         req.beneficios   = getText(etBenef).isEmpty() ? vagaAtual.beneficios : getText(etBenef);
         req.cargaHoraria = getText(etCarga);
-        req.tipoVagaId   = getSelectedId(LookupCache.get().getTiposVaga(),    actvTipo.getText().toString(),        vagaAtual.tipoVagaId);
-        req.modalidadeId = getSelectedId(LookupCache.get().getModalidades(),  actvModalidade.getText().toString(),  vagaAtual.modalidadeId);
+        req.tipoVagaId   = getSelectedId(LookupCache.get().getTiposVaga(),       actvTipo.getText().toString(),        vagaAtual.tipoVagaId);
+        req.modalidadeId = getSelectedId(LookupCache.get().getModalidades(),     actvModalidade.getText().toString(),  vagaAtual.modalidadeId);
         req.escolaridadeId = getSelectedId(LookupCache.get().getEscolaridades(), actvEscolaridade.getText().toString(), vagaAtual.escolaridadeId);
-        req.cidadeId     = getSelectedId(LookupCache.get().getCidades(),      actvCidade.getText().toString(),      vagaAtual.cidadeId);
+        req.cidadeId     = getSelectedId(LookupCache.get().getCidades(),         actvCidade.getText().toString(),      vagaAtual.cidadeId);
         req.statusVagaId = vagaAtual.statusVagaId;
         req.salarioMinimo = parseDouble(getText(etSalMin), vagaAtual.salarioMinimo != null ? vagaAtual.salarioMinimo : 0.0);
         req.salarioMaximo = parseDouble(getText(etSalMax), vagaAtual.salarioMaximo != null ? vagaAtual.salarioMaximo : 0.0);
@@ -172,27 +216,177 @@ public class EditarVagaFragment extends Fragment {
         req.dataExpiracao = dataInput.isEmpty() ? vagaAtual.dataExpiracao : parseIsoDate(dataInput);
 
         ((MaterialButton) btn).setEnabled(false);
+        showLoading("Salvando alterações…");
         ApiClient.getService(requireContext()).atualizarVaga(vagaId, req).enqueue(new Callback<VagaResponse>() {
             @Override
             public void onResponse(@NonNull Call<VagaResponse> call, @NonNull Response<VagaResponse> r) {
                 if (!isAdded()) return;
+                hideLoading();
                 ((MaterialButton) btn).setEnabled(true);
                 if (r.isSuccessful()) {
                     com.edu.matchvagasempresas.network.DataCache.get().invalidateVagas(requireContext());
                     Toast.makeText(requireContext(), "Vaga atualizada!", Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(btn).navigateUp();
                 } else {
-                    Toast.makeText(requireContext(), "Erro ao atualizar vaga", Toast.LENGTH_SHORT).show();
+                    showErroDialog(buildErroHttp(r));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<VagaResponse> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
+                hideLoading();
                 ((MaterialButton) btn).setEnabled(true);
-                Toast.makeText(requireContext(), "Erro de conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                showErroDialog(buildErroConexao(t));
             }
         });
+    }
+
+    private boolean validarFormulario() {
+        tilTitulo.setError(null);
+        tilArea.setError(null);
+        tilDesc.setError(null);
+        tilTipo.setError(null);
+        tilModalidade.setError(null);
+        tilRequisitos.setError(null);
+        tilEscolaridade.setError(null);
+        tilCidade.setError(null);
+
+        boolean valido = true;
+        View primeiroErro = null;
+
+        if (getText(etTitulo).isEmpty()) {
+            tilTitulo.setError(getString(R.string.error_campo_obrigatorio));
+            primeiroErro = tilTitulo;
+            valido = false;
+        }
+        if (getText(etArea).isEmpty()) {
+            tilArea.setError(getString(R.string.error_campo_obrigatorio));
+            if (primeiroErro == null) primeiroErro = tilArea;
+            valido = false;
+        }
+        if (getText(etDesc).isEmpty()) {
+            tilDesc.setError(getString(R.string.error_campo_obrigatorio));
+            if (primeiroErro == null) primeiroErro = tilDesc;
+            valido = false;
+        }
+        if (getSelectedId(LookupCache.get().getTiposVaga(), actvTipo.getText().toString(), null) == null) {
+            tilTipo.setError(getString(R.string.error_selecione_opcao));
+            if (primeiroErro == null) primeiroErro = tilTipo;
+            valido = false;
+        }
+        if (getSelectedId(LookupCache.get().getModalidades(), actvModalidade.getText().toString(), null) == null) {
+            tilModalidade.setError(getString(R.string.error_selecione_opcao));
+            if (primeiroErro == null) primeiroErro = tilModalidade;
+            valido = false;
+        }
+        if (getText(etReq).isEmpty()) {
+            tilRequisitos.setError(getString(R.string.error_campo_obrigatorio));
+            if (primeiroErro == null) primeiroErro = tilRequisitos;
+            valido = false;
+        }
+        if (getSelectedId(LookupCache.get().getEscolaridades(), actvEscolaridade.getText().toString(), null) == null) {
+            tilEscolaridade.setError(getString(R.string.error_selecione_opcao));
+            if (primeiroErro == null) primeiroErro = tilEscolaridade;
+            valido = false;
+        }
+        if (getSelectedId(LookupCache.get().getCidades(), actvCidade.getText().toString(), null) == null) {
+            tilCidade.setError(getString(R.string.error_selecione_opcao));
+            if (primeiroErro == null) primeiroErro = tilCidade;
+            valido = false;
+        }
+
+        if (primeiroErro != null) primeiroErro.requestFocus();
+        return valido;
+    }
+
+    private void showLoading(String mensagem) {
+        if (!isAdded() || (loadingDialog != null && loadingDialog.isShowing())) return;
+        float dp = requireContext().getResources().getDisplayMetrics().density;
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(requireContext());
+        layout.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        layout.setPadding((int)(24*dp), (int)(24*dp), (int)(24*dp), (int)(24*dp));
+        layout.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        com.google.android.material.progressindicator.CircularProgressIndicator progress =
+                new com.google.android.material.progressindicator.CircularProgressIndicator(requireContext());
+        progress.setIndeterminate(true);
+        layout.addView(progress);
+        android.widget.TextView tv = new android.widget.TextView(requireContext());
+        tv.setText(mensagem);
+        android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMarginStart((int)(16*dp));
+        tv.setLayoutParams(lp);
+        layout.addView(tv);
+        loadingDialog = new AlertDialog.Builder(requireContext())
+                .setView(layout)
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+    }
+
+    private void hideLoading() {
+        if (loadingDialog != null && loadingDialog.isShowing()) loadingDialog.dismiss();
+        loadingDialog = null;
+    }
+
+    private void showErroDialog(String mensagem) {
+        if (!isAdded()) return;
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Erro")
+                .setMessage(mensagem)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private String buildErroHttp(Response<?> r) {
+        String corpo = null;
+        if (r.errorBody() != null) {
+            try { corpo = r.errorBody().string(); } catch (IOException ignored) {}
+        }
+        if (corpo != null && !corpo.isEmpty()) {
+            try {
+                org.json.JSONObject json = new org.json.JSONObject(corpo);
+                StringBuilder sb = new StringBuilder();
+                if (json.has("message")) sb.append(json.getString("message"));
+                if (json.has("erros")) {
+                    org.json.JSONObject erros = json.getJSONObject("erros");
+                    java.util.Iterator<String> keys = erros.keys();
+                    if (keys.hasNext()) {
+                        if (sb.length() > 0) sb.append("\n\n");
+                        while (keys.hasNext()) {
+                            sb.append("• ").append(erros.getString(keys.next())).append("\n");
+                        }
+                    }
+                }
+                if (sb.length() > 0) return sb.toString().trim();
+                for (String campo : new String[]{"error", "detail"}) {
+                    if (json.has(campo)) return json.getString(campo);
+                }
+            } catch (org.json.JSONException ignored) {}
+        }
+        switch (r.code()) {
+            case 400: return "Dados inválidos. Verifique os campos preenchidos e tente novamente.";
+            case 401: return "Sessão expirada. Faça login novamente.";
+            case 403: return "Você não tem permissão para editar esta vaga.";
+            case 404: return "Vaga não encontrada. Ela pode ter sido removida.";
+            case 409: return "Conflito ao salvar. Os dados podem ter sido alterados por outro acesso.";
+            case 422: return "Não foi possível processar os dados. Revise as informações e tente novamente.";
+            case 500: return "Erro interno no servidor. Tente novamente mais tarde.";
+            case 503: return "Serviço temporariamente indisponível. Tente novamente em instantes.";
+            default:  return "Erro ao salvar a vaga (código " + r.code() + "). Tente novamente.";
+        }
+    }
+
+    private String buildErroConexao(Throwable t) {
+        if (t instanceof UnknownHostException)
+            return "Sem conexão com a internet. Verifique sua rede e tente novamente.";
+        if (t instanceof SocketTimeoutException)
+            return "Tempo limite excedido. Verifique sua conexão e tente novamente.";
+        if (t instanceof IOException)
+            return "Falha na comunicação com o servidor. Tente novamente.";
+        return "Erro inesperado: " + t.getMessage();
     }
 
     private void setupDatePicker(View view) {

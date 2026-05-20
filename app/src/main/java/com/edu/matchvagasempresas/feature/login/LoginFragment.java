@@ -27,6 +27,9 @@ import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
+    private MaterialButton btnLogin;
+    private View llLoading;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -38,7 +41,8 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        MaterialButton btnLogin = view.findViewById(R.id.btn_login);
+        btnLogin = view.findViewById(R.id.btn_login);
+        llLoading = view.findViewById(R.id.ll_loading);
         TextInputEditText etEmail = view.findViewById(R.id.et_email);
         TextInputEditText etSenha = view.findViewById(R.id.et_senha);
 
@@ -49,8 +53,8 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(requireContext(), "Preencha e-mail e senha", Toast.LENGTH_SHORT).show();
                 return;
             }
-            btnLogin.setEnabled(false);
-            fazerLogin(v, email, senha, btnLogin);
+            setLoading(true);
+            fazerLogin(v, email, senha);
         });
 
         view.findViewById(R.id.tv_cadastrar).setOnClickListener(v ->
@@ -60,7 +64,13 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(requireContext(), "Funcionalidade em breve", Toast.LENGTH_SHORT).show());
     }
 
-    private void fazerLogin(View anchor, String email, String senha, MaterialButton btnLogin) {
+    private void setLoading(boolean loading) {
+        btnLogin.setEnabled(!loading);
+        btnLogin.setText(loading ? "" : getString(R.string.btn_entrar));
+        llLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void fazerLogin(View anchor, String email, String senha) {
         ApiService api = ApiClient.getService(requireContext());
 
         JsonObject body = new JsonObject();
@@ -74,9 +84,9 @@ public class LoginFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse auth = response.body();
                     new SessionManager(requireContext()).saveAuth(auth.token, auth.usuarioId);
-                    carregarEmpresa(anchor, btnLogin);
+                    carregarEmpresa(anchor);
                 } else {
-                    btnLogin.setEnabled(true);
+                    setLoading(false);
                     Toast.makeText(requireContext(), "E-mail ou senha inválidos", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -84,13 +94,13 @@ public class LoginFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
                 if (!isAdded()) return;
-                btnLogin.setEnabled(true);
+                setLoading(false);
                 Toast.makeText(requireContext(), "Erro de conexão: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void carregarEmpresa(View anchor, MaterialButton btnLogin) {
+    private void carregarEmpresa(View anchor) {
         ApiClient.getService(requireContext()).minhaEmpresa().enqueue(new Callback<EmpresaResponse>() {
             @Override
             public void onResponse(@NonNull Call<EmpresaResponse> call, @NonNull Response<EmpresaResponse> response) {

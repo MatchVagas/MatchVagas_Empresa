@@ -84,6 +84,10 @@
     <string name="filter_em_analise">Em Análise</string>
     <string name="filter_aprovado">Aprovado</string>
     <string name="filter_reprovado">Reprovado</string>
+    <string name="filter_em_entrevista">Em Entrevista</string>
+    <string name="filter_proposta_enviada">Proposta Enviada</string>
+    <string name="filter_contratado">Contratado</string>
+    <string name="filter_desistiu">Desistiu</string>
     <string name="label_candidato">Candidato</string>
     <string name="label_data_candidatura">Data da candidatura</string>
     <string name="label_status_atual">Status atual</string>
@@ -111,6 +115,10 @@
     <string name="label_desc_programar">Defina quando a vaga deve ser publicada automaticamente</string>
     <string name="label_desc_status">Ativar ou desativar a visibilidade desta vaga</string>
     <string name="label_desc_deletar">A vaga e todas as candidaturas serão permanentemente removidas.</string>
+
+    <!-- Erros de validação -->
+    <string name="error_campo_obrigatorio">Campo obrigatório</string>
+    <string name="error_selecione_opcao">Selecione uma opção</string>
 
     <!-- Perfil -->
     <string name="title_perfil_empresa">Perfil da Empresa</string>
