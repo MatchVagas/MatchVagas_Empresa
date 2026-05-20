@@ -134,13 +134,6 @@
                     android:checked="true" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_pendente"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/filter_pendente"
-                    style="@style/Widget.Material3.Chip.Filter" />
-
-                <com.google.android.material.chip.Chip
                     android:id="@+id/chip_em_analise"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -159,6 +152,34 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/filter_reprovado"
+                    style="@style/Widget.Material3.Chip.Filter" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_em_entrevista"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_em_entrevista"
+                    style="@style/Widget.Material3.Chip.Filter" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_proposta_enviada"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_proposta_enviada"
+                    style="@style/Widget.Material3.Chip.Filter" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_contratado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_contratado"
+                    style="@style/Widget.Material3.Chip.Filter" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_desistiu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/filter_desistiu"
                     style="@style/Widget.Material3.Chip.Filter" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>

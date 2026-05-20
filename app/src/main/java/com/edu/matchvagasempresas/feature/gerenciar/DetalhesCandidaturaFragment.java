@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -34,6 +35,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,6 +69,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
     private MaterialButton btnVerCurriculo;
     private SwipeRefreshLayout swipeRefresh;
     private long candidaturaIdAtual = -1;
+    private AlertDialog loadingDialog;
 
     @Nullable
     @Override
@@ -122,7 +126,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
                     public void onFailure(@NonNull Call<CandidaturaEmpresaResponse> call, @NonNull Throwable t) {
                         if (!isAdded()) return;
                         if (swipeRefresh != null) swipeRefresh.setRefreshing(false);
-                        Toast.makeText(requireContext(), "Erro ao carregar candidatura", Toast.LENGTH_SHORT).show();
+                        showErroDialog(buildErroConexao(t));
                     }
                 });
     }
@@ -194,6 +198,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
 
         btnVerCurriculo.setEnabled(false);
         btnVerCurriculo.setText("Obtendo link…");
+        showLoading("Obtendo currículo…");
 
         String token = new SessionManager(requireContext()).getToken();
         String url = ApiClient.BASE_URL + "/api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
@@ -215,8 +220,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
                 handler.post(() -> {
                     if (!isAdded()) return;
                     resetarBotaoCurriculo();
-                    Toast.makeText(requireContext(), "Erro de conexão ao buscar currículo",
-                            Toast.LENGTH_SHORT).show();
+                    showErroDialog(buildErroConexao(e));
                 });
             }
 
@@ -230,8 +234,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
                     handler.post(() -> {
                         if (!isAdded()) return;
                         resetarBotaoCurriculo();
-                        Toast.makeText(requireContext(), "Link do currículo não encontrado",
-                                Toast.LENGTH_SHORT).show();
+                        showErroDialog("Link do currículo não encontrado. Tente novamente.");
                     });
                     return;
                 }
@@ -267,9 +270,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
                     handler.post(() -> {
                         if (!isAdded()) return;
                         resetarBotaoCurriculo();
-                        Toast.makeText(requireContext(),
-                                "Erro ao baixar o currículo (" + r.code() + ")",
-                                Toast.LENGTH_SHORT).show();
+                        showErroDialog("Erro ao baixar o currículo (código " + r.code() + "). Tente novamente.");
                     });
                     return;
                 }
@@ -294,8 +295,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
                 handler.post(() -> {
                     if (!isAdded()) return;
                     resetarBotaoCurriculo();
-                    Toast.makeText(requireContext(), "Erro ao salvar o arquivo",
-                            Toast.LENGTH_SHORT).show();
+                    showErroDialog("Erro ao salvar o arquivo do currículo. Tente novamente.");
                 });
             }
         });
@@ -317,13 +317,13 @@ public class DetalhesCandidaturaFragment extends Fragment {
             try {
                 startActivity(intent);
             } catch (ActivityNotFoundException e2) {
-                Toast.makeText(requireContext(), "Nenhum app para abrir o PDF",
-                        Toast.LENGTH_SHORT).show();
+                showErroDialog("Nenhum aplicativo encontrado para abrir o PDF. Instale um leitor de PDF e tente novamente.");
             }
         }
     }
 
     private void resetarBotaoCurriculo() {
+        hideLoading();
         if (btnVerCurriculo != null) {
             btnVerCurriculo.setEnabled(true);
             btnVerCurriculo.setText("Baixar Currículo");
@@ -337,11 +337,12 @@ public class DetalhesCandidaturaFragment extends Fragment {
         String label = actvStatus != null ? actvStatus.getText().toString().trim() : "";
         Long statusId = STATUS_MAP.get(label);
         if (statusId == null) {
-            Toast.makeText(requireContext(), "Selecione um status válido", Toast.LENGTH_SHORT).show();
+            showErroDialog("Selecione um status válido antes de salvar.");
             return;
         }
 
         ((MaterialButton) btn).setEnabled(false);
+        showLoading("Atualizando status…");
         ApiClient.getService(requireContext())
                 .atualizarStatusCandidatura(candidaturaAtual.id, statusId)
                 .enqueue(new Callback<CandidaturaEmpresaResponse>() {
@@ -349,23 +350,114 @@ public class DetalhesCandidaturaFragment extends Fragment {
                     public void onResponse(@NonNull Call<CandidaturaEmpresaResponse> call,
                                            @NonNull Response<CandidaturaEmpresaResponse> r) {
                         if (!isAdded()) return;
+                        hideLoading();
                         ((MaterialButton) btn).setEnabled(true);
                         if (r.isSuccessful() && r.body() != null) {
                             candidaturaAtual = r.body();
                             setText(requireView(), R.id.tv_status_atual, candidaturaAtual.status);
                             Toast.makeText(requireContext(), "Status atualizado!", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(requireContext(), "Erro ao atualizar status", Toast.LENGTH_SHORT).show();
+                            showErroDialog(buildErroHttp(r));
                         }
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<CandidaturaEmpresaResponse> call, @NonNull Throwable t) {
                         if (!isAdded()) return;
+                        hideLoading();
                         ((MaterialButton) btn).setEnabled(true);
-                        Toast.makeText(requireContext(), "Erro de conexão", Toast.LENGTH_SHORT).show();
+                        showErroDialog(buildErroConexao(t));
                     }
                 });
+    }
+
+    // ── Loading / Erro ────────────────────────────────────────────────────────
+
+    private void showLoading(String mensagem) {
+        if (!isAdded() || (loadingDialog != null && loadingDialog.isShowing())) return;
+        float dp = requireContext().getResources().getDisplayMetrics().density;
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(requireContext());
+        layout.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        layout.setPadding((int)(24*dp), (int)(24*dp), (int)(24*dp), (int)(24*dp));
+        layout.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        com.google.android.material.progressindicator.CircularProgressIndicator progress =
+                new com.google.android.material.progressindicator.CircularProgressIndicator(requireContext());
+        progress.setIndeterminate(true);
+        layout.addView(progress);
+        android.widget.TextView tv = new android.widget.TextView(requireContext());
+        tv.setText(mensagem);
+        android.widget.LinearLayout.LayoutParams lp = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMarginStart((int)(16*dp));
+        tv.setLayoutParams(lp);
+        layout.addView(tv);
+        loadingDialog = new AlertDialog.Builder(requireContext())
+                .setView(layout)
+                .setCancelable(false)
+                .create();
+        loadingDialog.show();
+    }
+
+    private void hideLoading() {
+        if (loadingDialog != null && loadingDialog.isShowing()) loadingDialog.dismiss();
+        loadingDialog = null;
+    }
+
+    private void showErroDialog(String mensagem) {
+        if (!isAdded()) return;
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Erro")
+                .setMessage(mensagem)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private String buildErroHttp(Response<?> r) {
+        String corpo = null;
+        if (r.errorBody() != null) {
+            try { corpo = r.errorBody().string(); } catch (IOException ignored) {}
+        }
+        if (corpo != null && !corpo.isEmpty()) {
+            try {
+                org.json.JSONObject json = new org.json.JSONObject(corpo);
+                StringBuilder sb = new StringBuilder();
+                if (json.has("message")) sb.append(json.getString("message"));
+                if (json.has("erros")) {
+                    org.json.JSONObject erros = json.getJSONObject("erros");
+                    java.util.Iterator<String> keys = erros.keys();
+                    if (keys.hasNext()) {
+                        if (sb.length() > 0) sb.append("\n\n");
+                        while (keys.hasNext()) {
+                            sb.append("• ").append(erros.getString(keys.next())).append("\n");
+                        }
+                    }
+                }
+                if (sb.length() > 0) return sb.toString().trim();
+                for (String campo : new String[]{"error", "detail"}) {
+                    if (json.has(campo)) return json.getString(campo);
+                }
+            } catch (org.json.JSONException ignored) {}
+        }
+        switch (r.code()) {
+            case 400: return "Dados inválidos. Verifique as informações e tente novamente.";
+            case 401: return "Sessão expirada. Faça login novamente.";
+            case 403: return "Você não tem permissão para realizar esta operação.";
+            case 404: return "Candidatura não encontrada. Ela pode ter sido removida.";
+            case 500: return "Erro interno no servidor. Tente novamente mais tarde.";
+            case 503: return "Serviço temporariamente indisponível. Tente novamente em instantes.";
+            default:  return "Erro na operação (código " + r.code() + "). Tente novamente.";
+        }
+    }
+
+    private String buildErroConexao(Throwable t) {
+        if (t instanceof UnknownHostException)
+            return "Sem conexão com a internet. Verifique sua rede e tente novamente.";
+        if (t instanceof SocketTimeoutException)
+            return "Tempo limite excedido. Verifique sua conexão e tente novamente.";
+        if (t instanceof IOException)
+            return "Falha na comunicação com o servidor. Tente novamente.";
+        return "Erro inesperado: " + t.getMessage();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

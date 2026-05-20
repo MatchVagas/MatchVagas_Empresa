@@ -225,11 +225,14 @@ public class ListaCandidaturasFragment extends Fragment {
         chips.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) return;
             int id = checkedIds.get(0);
-            if (id == R.id.chip_pendente)        filtroAtivo = "Aguardando";
-            else if (id == R.id.chip_em_analise) filtroAtivo = "Em análise";
-            else if (id == R.id.chip_aprovado)   filtroAtivo = "Aprovado";
-            else if (id == R.id.chip_reprovado)  filtroAtivo = "Reprovado";
-            else                                 filtroAtivo = null;
+            if (id == R.id.chip_proposta_enviada)   filtroAtivo = "PROPOSTA_ENVIADA";
+            else if (id == R.id.chip_em_analise)    filtroAtivo = "EM_ANALISE";
+            else if (id == R.id.chip_aprovado)      filtroAtivo = "APROVADO";
+            else if (id == R.id.chip_reprovado)     filtroAtivo = "REPROVADO";
+            else if (id == R.id.chip_em_entrevista) filtroAtivo = "EM_ENTREVISTA";
+            else if (id == R.id.chip_contratado)    filtroAtivo = "CONTRATADO";
+            else if (id == R.id.chip_desistiu)      filtroAtivo = "DESISTIU";
+            else                                    filtroAtivo = null;
             aplicarFiltro(filtroAtivo);
         });
     }
