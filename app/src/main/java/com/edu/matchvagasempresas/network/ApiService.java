@@ -35,6 +35,15 @@ public interface ApiService {
     @POST("api/auth/register-empresa")
     Call<AuthResponse> registerEmpresa(@Body RegisterEmpresaRequest request);
 
+    @POST("api/auth/esqueceu-senha")
+    Call<Void> esqueceuSenha(@Body JsonObject body);
+
+    @POST("api/auth/verificar-codigo")
+    Call<JsonObject> verificarCodigo(@Body JsonObject body);
+
+    @POST("api/auth/redefinir-senha")
+    Call<Void> redefinirSenha(@Body JsonObject body);
+
     // ── Empresa ───────────────────────────────────────────────────────────────
 
     @GET("api/empresas/minha-empresa")

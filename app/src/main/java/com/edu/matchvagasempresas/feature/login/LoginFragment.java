@@ -61,7 +61,7 @@ public class LoginFragment extends Fragment {
                 Navigation.findNavController(v).navigate(R.id.action_login_to_cadastroEmpresa));
 
         view.findViewById(R.id.tv_esqueceu_senha).setOnClickListener(v ->
-                Toast.makeText(requireContext(), "Funcionalidade em breve", Toast.LENGTH_SHORT).show());
+                Navigation.findNavController(v).navigate(R.id.action_login_to_esqueceuSenha));
     }
 
     private void setLoading(boolean loading) {

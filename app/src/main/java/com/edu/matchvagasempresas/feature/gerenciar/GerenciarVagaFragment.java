@@ -47,6 +47,7 @@ public class GerenciarVagaFragment extends Fragment {
     private MaterialSwitch switchAtiva;
     private TextView tvTituloVaga;
     private TextView tvStatusBadge;
+    private TextView tvNumCandidaturas;
     private MaterialButton btnSalvarStatus;
     private AlertDialog loadingDialog;
 
@@ -67,6 +68,7 @@ public class GerenciarVagaFragment extends Fragment {
         switchAtiva = view.findViewById(R.id.switch_ativa);
         tvTituloVaga = view.findViewById(R.id.tv_titulo_vaga);
         tvStatusBadge = view.findViewById(R.id.tv_status_vaga_badge);
+        tvNumCandidaturas = view.findViewById(R.id.tv_num_candidaturas);
         btnSalvarStatus = view.findViewById(R.id.btn_salvar_status);
 
         switchAtiva.setOnCheckedChangeListener((btn, checked) ->
@@ -87,7 +89,10 @@ public class GerenciarVagaFragment extends Fragment {
 
         vagaId = getArguments() != null ? getArguments().getLong("vagaId", -1) : -1;
         carregarStatus();
-        if (vagaId > 0) carregarVaga();
+        if (vagaId > 0) {
+            carregarVaga();
+            carregarNumeroCandidaturas();
+        }
     }
 
     private void carregarStatus() {
@@ -127,6 +132,24 @@ public class GerenciarVagaFragment extends Fragment {
                 showErroDialog(buildErroConexao(t));
             }
         });
+    }
+
+    private void carregarNumeroCandidaturas() {
+        ApiClient.getService(requireContext()).candidatosPorVaga(vagaId).enqueue(
+                new Callback<List<com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse>> call,
+                                           @NonNull Response<List<com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse>> r) {
+                        if (!isAdded() || tvNumCandidaturas == null) return;
+                        if (r.isSuccessful() && r.body() != null) {
+                            int total = r.body().size();
+                            tvNumCandidaturas.setText(total + (total == 1 ? " candidatura" : " candidaturas"));
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call<List<com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse>> call,
+                                         @NonNull Throwable t) { }
+                });
     }
 
     private void atualizarBadge(boolean ativa) {

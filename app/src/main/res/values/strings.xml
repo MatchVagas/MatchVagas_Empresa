@@ -116,6 +116,24 @@
     <string name="label_desc_status">Ativar ou desativar a visibilidade desta vaga</string>
     <string name="label_desc_deletar">A vaga e todas as candidaturas serão permanentemente removidas.</string>
 
+    <!-- Redefinir Senha -->
+    <string name="title_esqueceu_senha">Esqueceu a senha?</string>
+    <string name="desc_esqueceu_senha">Informe seu e-mail e enviaremos um código para redefinir sua senha.</string>
+    <string name="btn_enviar_codigo">Enviar código</string>
+    <string name="loading_enviando">Enviando…</string>
+    <string name="title_verificar_codigo">Verificar código</string>
+    <string name="desc_verificar_codigo">Digite o código de 6 dígitos enviado para seu e-mail.</string>
+    <string name="desc_verificar_codigo_email">Digite o código de 6 dígitos enviado para %1$s.</string>
+    <string name="hint_codigo">Código de verificação</string>
+    <string name="btn_verificar">Verificar</string>
+    <string name="loading_verificando">Verificando…</string>
+    <string name="title_redefinir_senha">Nova senha</string>
+    <string name="desc_redefinir_senha">Escolha uma senha com no mínimo 6 caracteres.</string>
+    <string name="hint_nova_senha">Nova senha</string>
+    <string name="btn_redefinir_senha">Redefinir senha</string>
+    <string name="loading_redefinindo">Salvando…</string>
+    <string name="voltar_ao_login">Voltar ao login</string>
+
     <!-- Erros de validação -->
     <string name="error_campo_obrigatorio">Campo obrigatório</string>
     <string name="error_selecione_opcao">Selecione uma opção</string>

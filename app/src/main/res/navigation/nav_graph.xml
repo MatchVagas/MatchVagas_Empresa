@@ -21,6 +21,54 @@
         <action
             android:id="@+id/action_login_to_cadastroEmpresa"
             app:destination="@id/cadastroEmpresaFragment" />
+
+        <action
+            android:id="@+id/action_login_to_esqueceuSenha"
+            app:destination="@id/esqueceuSenhaFragment" />
+    </fragment>
+
+    <!-- Esqueceu Senha -->
+    <fragment
+        android:id="@+id/esqueceuSenhaFragment"
+        android:name="com.edu.matchvagasempresas.feature.login.EsqueceuSenhaFragment"
+        android:label="Esqueceu a Senha"
+        tools:layout="@layout/activity_esqueceu_senha">
+
+        <action
+            android:id="@+id/action_esqueceuSenha_to_verificarCodigo"
+            app:destination="@id/verificarCodigoFragment" />
+    </fragment>
+
+    <!-- Verificar Código -->
+    <fragment
+        android:id="@+id/verificarCodigoFragment"
+        android:name="com.edu.matchvagasempresas.feature.login.VerificarCodigoFragment"
+        android:label="Verificar Código"
+        tools:layout="@layout/activity_verificar_codigo">
+
+        <action
+            android:id="@+id/action_verificarCodigo_to_redefinirSenha"
+            app:destination="@id/redefinirSenhaFragment" />
+
+        <action
+            android:id="@+id/action_verificarCodigo_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Redefinir Senha -->
+    <fragment
+        android:id="@+id/redefinirSenhaFragment"
+        android:name="com.edu.matchvagasempresas.feature.login.RedefinirSenhaFragment"
+        android:label="Redefinir Senha"
+        tools:layout="@layout/activity_redefinir_senha">
+
+        <action
+            android:id="@+id/action_redefinirSenha_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Cadastro Empresa -->
