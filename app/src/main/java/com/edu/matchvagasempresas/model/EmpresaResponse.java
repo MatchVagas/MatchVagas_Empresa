@@ -13,6 +13,7 @@ public class EmpresaResponse {
     public Long usuarioGestorId;
     public String nomeGestor;
     public String status;
+    public String logoUrl;
     public Telefone telefone;
 
     public static class Telefone {

@@ -1,40 +1,43 @@
 package com.edu.matchvagasempresas.network;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 
+import com.edu.matchvagasempresas.db.AppDatabase;
+import com.edu.matchvagasempresas.db.CandidaturaEntity;
+import com.edu.matchvagasempresas.db.EmpresaEntity;
+import com.edu.matchvagasempresas.db.VagaEntity;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.VagaResponse;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Cache local de dados de tela com padrão stale-while-revalidate:
- *   1. Retorna dado do disco imediatamente (sem esperar rede).
+ * Cache local com padrão stale-while-revalidate:
+ *   1. Retorna dado do banco imediatamente (sem esperar rede).
  *   2. Busca versão atualizada da API em background.
  *   3. Chama onFresh() quando o dado novo chega — o fragment decide se redesenha.
+ *
+ * Vagas, Candidaturas e Empresa → Room (SQLite).
  *
  * TTL de 10 minutos: dados expirados são buscados novamente, mas ainda exibidos
  * enquanto o refresh acontece para não deixar a tela vazia.
  */
 public class DataCache {
 
-    public interface OnCached<T>  { void onCached(T data); }
-    public interface OnFresh<T>   { void onFresh(T data); }
+    public interface OnCached<T> { void onCached(T data); }
+    public interface OnFresh<T>  { void onFresh(T data); }
 
-    private static final String PREFS          = "screen_cache";
-    private static final String KEY_VAGAS      = "vagas";
-    private static final String KEY_EMPRESA    = "empresa";
-    private static final String KEY_VAGAS_TS   = "vagas_ts";
-    private static final String KEY_EMPRESA_TS = "empresa_ts";
-    private static final long   TTL_MS         = 10 * 60 * 1000L; // 10 minutos
+    private static final long TTL_MS = 10 * 60 * 1000L;
 
     private static DataCache instance;
-    private final Gson gson = new Gson();
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private DataCache() {}
 
@@ -45,85 +48,48 @@ public class DataCache {
 
     // ── Vagas ─────────────────────────────────────────────────────────────────
 
-    /**
-     * Carrega vagas do cache (se houver) e dispara refresh da API em background.
-     * @param onCached chamado imediatamente com dado do disco (pode ser null)
-     * @param onFresh  chamado quando dado novo chegar da API
-     */
     public void loadVagas(Context ctx,
                           OnCached<List<VagaResponse>> onCached,
                           OnFresh<List<VagaResponse>> onFresh) {
 
-        List<VagaResponse> cached = readVagas(ctx);
-        if (onCached != null) onCached.onCached(cached);
+        executor.execute(() -> {
+            List<VagaEntity> entities = AppDatabase.get(ctx).vagaDao().getAll();
+            List<VagaResponse> cached = VagaEntity.toResponseList(entities);
+            mainHandler.post(() -> {
+                if (onCached != null) onCached.onCached(cached.isEmpty() ? null : cached);
+            });
 
-        ApiClient.getService(ctx).minhasVagas().enqueue(new retrofit2.Callback<List<VagaResponse>>() {
-            @Override
-            public void onResponse(retrofit2.Call<List<VagaResponse>> call,
-                                   retrofit2.Response<List<VagaResponse>> r) {
-                if (r.isSuccessful() && r.body() != null) {
-                    saveVagas(ctx, r.body());
-                    if (onFresh != null) onFresh.onFresh(r.body());
+            ApiClient.getService(ctx).minhasVagas().enqueue(new retrofit2.Callback<List<VagaResponse>>() {
+                @Override
+                public void onResponse(retrofit2.Call<List<VagaResponse>> call,
+                                       retrofit2.Response<List<VagaResponse>> r) {
+                    if (r.isSuccessful() && r.body() != null) {
+                        saveVagas(ctx, r.body());
+                        if (onFresh != null) mainHandler.post(() -> onFresh.onFresh(r.body()));
+                    }
                 }
-            }
-            @Override
-            public void onFailure(retrofit2.Call<List<VagaResponse>> call, Throwable t) {}
+                @Override
+                public void onFailure(retrofit2.Call<List<VagaResponse>> call, Throwable t) {}
+            });
         });
     }
 
     public void saveVagas(Context ctx, List<VagaResponse> vagas) {
-        prefs(ctx).edit()
-                .putString(KEY_VAGAS, gson.toJson(vagas))
-                .putLong(KEY_VAGAS_TS, System.currentTimeMillis())
-                .apply();
-    }
-
-    public List<VagaResponse> readVagas(Context ctx) {
-        String json = prefs(ctx).getString(KEY_VAGAS, null);
-        if (json == null) return null;
-        Type type = new TypeToken<List<VagaResponse>>(){}.getType();
-        return gson.fromJson(json, type);
-    }
-
-    public boolean vagasExpiradas(Context ctx) {
-        long ts = prefs(ctx).getLong(KEY_VAGAS_TS, 0);
-        return System.currentTimeMillis() - ts > TTL_MS;
-    }
-
-    // ── Empresa ───────────────────────────────────────────────────────────────
-
-    public void loadEmpresa(Context ctx,
-                            OnCached<EmpresaResponse> onCached,
-                            OnFresh<EmpresaResponse> onFresh) {
-
-        EmpresaResponse cached = readEmpresa(ctx);
-        if (onCached != null) onCached.onCached(cached);
-
-        ApiClient.getService(ctx).minhaEmpresa().enqueue(new retrofit2.Callback<EmpresaResponse>() {
-            @Override
-            public void onResponse(retrofit2.Call<EmpresaResponse> call,
-                                   retrofit2.Response<EmpresaResponse> r) {
-                if (r.isSuccessful() && r.body() != null) {
-                    saveEmpresa(ctx, r.body());
-                    if (onFresh != null) onFresh.onFresh(r.body());
-                }
-            }
-            @Override
-            public void onFailure(retrofit2.Call<EmpresaResponse> call, Throwable t) {}
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.get(ctx);
+            db.vagaDao().deleteAll();
+            db.vagaDao().insertAll(VagaEntity.fromResponseList(vagas));
         });
     }
 
-    public void saveEmpresa(Context ctx, EmpresaResponse empresa) {
-        prefs(ctx).edit()
-                .putString(KEY_EMPRESA, gson.toJson(empresa))
-                .putLong(KEY_EMPRESA_TS, System.currentTimeMillis())
-                .apply();
+    public void invalidateVagas(Context ctx) {
+        executor.execute(() -> AppDatabase.get(ctx).vagaDao().deleteAll());
     }
 
-    public EmpresaResponse readEmpresa(Context ctx) {
-        String json = prefs(ctx).getString(KEY_EMPRESA, null);
-        if (json == null) return null;
-        return gson.fromJson(json, EmpresaResponse.class);
+    public boolean vagasExpiradas(Context ctx) {
+        Long cachedAt = AppDatabase.get(ctx).vagaDao().getCachedAt();
+        if (cachedAt == null) return true;
+        return System.currentTimeMillis() - cachedAt > TTL_MS;
     }
 
     // ── Candidaturas ─────────────────────────────────────────────────────────
@@ -132,65 +98,87 @@ public class DataCache {
                                  OnCached<List<CandidaturaEmpresaResponse>> onCached,
                                  OnFresh<List<CandidaturaEmpresaResponse>> onFresh) {
 
-        List<CandidaturaEmpresaResponse> cached = readCandidaturas(ctx, vagaId);
-        if (onCached != null) onCached.onCached(cached);
+        executor.execute(() -> {
+            List<CandidaturaEntity> entities = AppDatabase.get(ctx).candidaturaDao().getByVaga(vagaId);
+            List<CandidaturaEmpresaResponse> cached = CandidaturaEntity.toResponseList(entities);
+            mainHandler.post(() -> {
+                if (onCached != null) onCached.onCached(cached.isEmpty() ? null : cached);
+            });
 
-        ApiClient.getService(ctx).candidatosPorVaga(vagaId)
-                .enqueue(new retrofit2.Callback<List<CandidaturaEmpresaResponse>>() {
-                    @Override
-                    public void onResponse(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
-                                           retrofit2.Response<List<CandidaturaEmpresaResponse>> r) {
-                        if (r.isSuccessful() && r.body() != null) {
-                            saveCandidaturas(ctx, vagaId, r.body());
-                            if (onFresh != null) onFresh.onFresh(r.body());
+            ApiClient.getService(ctx).candidatosPorVaga(vagaId)
+                    .enqueue(new retrofit2.Callback<List<CandidaturaEmpresaResponse>>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
+                                               retrofit2.Response<List<CandidaturaEmpresaResponse>> r) {
+                            if (r.isSuccessful() && r.body() != null) {
+                                saveCandidaturas(ctx, vagaId, r.body());
+                                if (onFresh != null) mainHandler.post(() -> onFresh.onFresh(r.body()));
+                            }
                         }
-                    }
-                    @Override
-                    public void onFailure(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
-                                          Throwable t) {}
-                });
+                        @Override
+                        public void onFailure(retrofit2.Call<List<CandidaturaEmpresaResponse>> call,
+                                              Throwable t) {}
+                    });
+        });
     }
 
     public void saveCandidaturas(Context ctx, long vagaId,
                                  List<CandidaturaEmpresaResponse> lista) {
-        prefs(ctx).edit()
-                .putString("candidaturas_" + vagaId, gson.toJson(lista))
-                .putLong("candidaturas_ts_" + vagaId, System.currentTimeMillis())
-                .apply();
-    }
-
-    public List<CandidaturaEmpresaResponse> readCandidaturas(Context ctx, long vagaId) {
-        String json = prefs(ctx).getString("candidaturas_" + vagaId, null);
-        if (json == null) return null;
-        java.lang.reflect.Type type =
-                new com.google.gson.reflect.TypeToken<List<CandidaturaEmpresaResponse>>(){}.getType();
-        return gson.fromJson(json, type);
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.get(ctx);
+            db.candidaturaDao().deleteByVaga(vagaId);
+            db.candidaturaDao().insertAll(CandidaturaEntity.fromResponseList(lista));
+        });
     }
 
     public void invalidateCandidaturas(Context ctx, long vagaId) {
-        prefs(ctx).edit().remove("candidaturas_ts_" + vagaId).apply();
+        executor.execute(() -> AppDatabase.get(ctx).candidaturaDao().deleteByVaga(vagaId));
     }
 
-    // ── Invalidação ───────────────────────────────────────────────────────────
+    // ── Empresa ───────────────────────────────────────────────────────────────
 
-    /** Chame após criar/editar/excluir uma vaga para forçar refresh na próxima abertura. */
-    public void invalidateVagas(Context ctx) {
-        prefs(ctx).edit().remove(KEY_VAGAS_TS).apply();
+    public void loadEmpresa(Context ctx,
+                            OnCached<EmpresaResponse> onCached,
+                            OnFresh<EmpresaResponse> onFresh) {
+
+        executor.execute(() -> {
+            EmpresaEntity entity = AppDatabase.get(ctx).empresaDao().get();
+            EmpresaResponse cached = entity != null ? entity.toResponse() : null;
+            mainHandler.post(() -> {
+                if (onCached != null) onCached.onCached(cached);
+            });
+
+            ApiClient.getService(ctx).minhaEmpresa().enqueue(new retrofit2.Callback<EmpresaResponse>() {
+                @Override
+                public void onResponse(retrofit2.Call<EmpresaResponse> call,
+                                       retrofit2.Response<EmpresaResponse> r) {
+                    if (r.isSuccessful() && r.body() != null) {
+                        saveEmpresa(ctx, r.body());
+                        if (onFresh != null) mainHandler.post(() -> onFresh.onFresh(r.body()));
+                    }
+                }
+                @Override
+                public void onFailure(retrofit2.Call<EmpresaResponse> call, Throwable t) {}
+            });
+        });
     }
 
-    /** Chame após editar o perfil da empresa. */
+    public void saveEmpresa(Context ctx, EmpresaResponse empresa) {
+        executor.execute(() -> AppDatabase.get(ctx).empresaDao().insert(EmpresaEntity.fromResponse(empresa)));
+    }
+
     public void invalidateEmpresa(Context ctx) {
-        prefs(ctx).edit().remove(KEY_EMPRESA_TS).apply();
+        executor.execute(() -> AppDatabase.get(ctx).empresaDao().delete());
     }
 
-    /** Limpa todo o cache (usado no logout). */
+    // ── Limpeza total (logout) ─────────────────────────────────────────────────
+
     public void clear(Context ctx) {
-        prefs(ctx).edit().clear().apply();
-    }
-
-    // ── Interno ───────────────────────────────────────────────────────────────
-
-    private SharedPreferences prefs(Context ctx) {
-        return ctx.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.get(ctx);
+            db.vagaDao().deleteAll();
+            db.candidaturaDao().deleteAll();
+            db.empresaDao().delete();
+        });
     }
 }

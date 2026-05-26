@@ -14,8 +14,8 @@ android {
         applicationId = "com.edu.matchvagasempresas"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,6 +57,9 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.glide)
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
