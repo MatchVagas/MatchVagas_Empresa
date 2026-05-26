@@ -8,8 +8,8 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
 @Database(
-    entities = {VagaEntity.class, CandidaturaEntity.class},
-    version = 1,
+    entities = {VagaEntity.class, CandidaturaEntity.class, LookupEntity.class, EmpresaEntity.class},
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters.class)
@@ -19,6 +19,8 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract VagaDao vagaDao();
     public abstract CandidaturaDao candidaturaDao();
+    public abstract LookupDao lookupDao();
+    public abstract EmpresaDao empresaDao();
 
     public static AppDatabase get(Context ctx) {
         if (instance == null) {
@@ -28,7 +30,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             ctx.getApplicationContext(),
                             AppDatabase.class,
                             "matchvagas.db"
-                    ).build();
+                    ).fallbackToDestructiveMigration().build();
                 }
             }
         }

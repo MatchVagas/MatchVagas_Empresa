@@ -1,17 +1,16 @@
 package com.edu.matchvagasempresas.network;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.edu.matchvagasempresas.db.AppDatabase;
 import com.edu.matchvagasempresas.db.CandidaturaEntity;
+import com.edu.matchvagasempresas.db.EmpresaEntity;
 import com.edu.matchvagasempresas.db.VagaEntity;
 import com.edu.matchvagasempresas.model.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.VagaResponse;
-import com.google.gson.Gson;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -23,8 +22,7 @@ import java.util.concurrent.Executors;
  *   2. Busca versão atualizada da API em background.
  *   3. Chama onFresh() quando o dado novo chega — o fragment decide se redesenha.
  *
- * Vagas e Candidaturas → Room (SQLite).
- * Empresa → SharedPreferences (registro único, sem necessidade de query).
+ * Vagas, Candidaturas e Empresa → Room (SQLite).
  *
  * TTL de 10 minutos: dados expirados são buscados novamente, mas ainda exibidos
  * enquanto o refresh acontece para não deixar a tela vazia.
@@ -34,15 +32,12 @@ public class DataCache {
     public interface OnCached<T> { void onCached(T data); }
     public interface OnFresh<T>  { void onFresh(T data); }
 
-    private static final String PREFS          = "screen_cache";
-    private static final String KEY_EMPRESA    = "empresa";
-    private static final long   TTL_MS         = 10 * 60 * 1000L;
+    private static final long TTL_MS = 10 * 60 * 1000L;
 
     private static DataCache instance;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final Gson gson = new Gson();
 
     private DataCache() {}
 
@@ -146,53 +141,44 @@ public class DataCache {
                             OnCached<EmpresaResponse> onCached,
                             OnFresh<EmpresaResponse> onFresh) {
 
-        EmpresaResponse cached = readEmpresa(ctx);
-        if (onCached != null) onCached.onCached(cached);
+        executor.execute(() -> {
+            EmpresaEntity entity = AppDatabase.get(ctx).empresaDao().get();
+            EmpresaResponse cached = entity != null ? entity.toResponse() : null;
+            mainHandler.post(() -> {
+                if (onCached != null) onCached.onCached(cached);
+            });
 
-        ApiClient.getService(ctx).minhaEmpresa().enqueue(new retrofit2.Callback<EmpresaResponse>() {
-            @Override
-            public void onResponse(retrofit2.Call<EmpresaResponse> call,
-                                   retrofit2.Response<EmpresaResponse> r) {
-                if (r.isSuccessful() && r.body() != null) {
-                    saveEmpresa(ctx, r.body());
-                    if (onFresh != null) onFresh.onFresh(r.body());
+            ApiClient.getService(ctx).minhaEmpresa().enqueue(new retrofit2.Callback<EmpresaResponse>() {
+                @Override
+                public void onResponse(retrofit2.Call<EmpresaResponse> call,
+                                       retrofit2.Response<EmpresaResponse> r) {
+                    if (r.isSuccessful() && r.body() != null) {
+                        saveEmpresa(ctx, r.body());
+                        if (onFresh != null) mainHandler.post(() -> onFresh.onFresh(r.body()));
+                    }
                 }
-            }
-            @Override
-            public void onFailure(retrofit2.Call<EmpresaResponse> call, Throwable t) {}
+                @Override
+                public void onFailure(retrofit2.Call<EmpresaResponse> call, Throwable t) {}
+            });
         });
     }
 
     public void saveEmpresa(Context ctx, EmpresaResponse empresa) {
-        prefs(ctx).edit()
-                .putString(KEY_EMPRESA, gson.toJson(empresa))
-                .apply();
-    }
-
-    public EmpresaResponse readEmpresa(Context ctx) {
-        String json = prefs(ctx).getString(KEY_EMPRESA, null);
-        if (json == null) return null;
-        return gson.fromJson(json, EmpresaResponse.class);
+        executor.execute(() -> AppDatabase.get(ctx).empresaDao().insert(EmpresaEntity.fromResponse(empresa)));
     }
 
     public void invalidateEmpresa(Context ctx) {
-        prefs(ctx).edit().remove(KEY_EMPRESA).apply();
+        executor.execute(() -> AppDatabase.get(ctx).empresaDao().delete());
     }
 
     // ── Limpeza total (logout) ─────────────────────────────────────────────────
 
     public void clear(Context ctx) {
-        prefs(ctx).edit().clear().apply();
         executor.execute(() -> {
             AppDatabase db = AppDatabase.get(ctx);
             db.vagaDao().deleteAll();
             db.candidaturaDao().deleteAll();
+            db.empresaDao().delete();
         });
-    }
-
-    // ── Interno ───────────────────────────────────────────────────────────────
-
-    private SharedPreferences prefs(Context ctx) {
-        return ctx.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 }

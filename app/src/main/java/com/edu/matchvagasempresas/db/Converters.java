@@ -2,6 +2,7 @@ package com.edu.matchvagasempresas.db;
 
 import androidx.room.TypeConverter;
 
+import com.edu.matchvagasempresas.model.EmpresaResponse;
 import com.edu.matchvagasempresas.model.ExperienciaResponse;
 import com.edu.matchvagasempresas.model.FormacaoResponse;
 import com.google.gson.Gson;
@@ -52,5 +53,16 @@ public class Converters {
         Type type = new TypeToken<List<String>>() {}.getType();
         List<String> result = gson.fromJson(json, type);
         return result != null ? result : new ArrayList<>();
+    }
+
+    @TypeConverter
+    public static String fromTelefone(EmpresaResponse.Telefone telefone) {
+        return telefone == null ? null : gson.toJson(telefone);
+    }
+
+    @TypeConverter
+    public static EmpresaResponse.Telefone toTelefone(String json) {
+        if (json == null) return null;
+        return gson.fromJson(json, EmpresaResponse.Telefone.class);
     }
 }

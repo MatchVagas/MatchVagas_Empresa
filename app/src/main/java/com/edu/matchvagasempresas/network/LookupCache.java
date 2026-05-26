@@ -1,19 +1,19 @@
 package com.edu.matchvagasempresas.network;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
+import com.edu.matchvagasempresas.db.AppDatabase;
+import com.edu.matchvagasempresas.db.LookupEntity;
 import com.edu.matchvagasempresas.model.LookupItem;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
@@ -24,31 +24,21 @@ public class LookupCache {
 
     public interface OnReady { void onReady(); }
 
-    private static final String PREFS        = "lookup_cache";
-    private static final String KEY_PORTES   = "portes";
-    private static final String KEY_RAMOS    = "ramos";
-    private static final String KEY_TIPOS    = "tipos_vaga";
-    private static final String KEY_MOD      = "modalidades";
-    private static final String KEY_ESCOL    = "escolaridades";
-    private static final String KEY_CIDADES  = "cidades";
-    private static final String KEY_STATUS   = "status_vaga";
-
     private static LookupCache instance;
 
-    private final List<LookupItem> portes       = new ArrayList<>();
-    private final List<LookupItem> ramos         = new ArrayList<>();
-    private final List<LookupItem> tiposVaga     = new ArrayList<>();
-    private final List<LookupItem> modalidades   = new ArrayList<>();
-    private final List<LookupItem> escolaridades = new ArrayList<>();
-    private final List<LookupItem> cidades       = new ArrayList<>();
-    private final List<LookupItem> statusVaga    = new ArrayList<>();
+    private final List<LookupItem> portes        = new ArrayList<>();
+    private final List<LookupItem> ramos          = new ArrayList<>();
+    private final List<LookupItem> tiposVaga      = new ArrayList<>();
+    private final List<LookupItem> modalidades    = new ArrayList<>();
+    private final List<LookupItem> escolaridades  = new ArrayList<>();
+    private final List<LookupItem> cidades        = new ArrayList<>();
+    private final List<LookupItem> statusVaga     = new ArrayList<>();
 
     private boolean loading = false;
     private boolean loaded  = false;
     private final List<OnReady> pending = new ArrayList<>();
     private final Handler main = new Handler(Looper.getMainLooper());
-    private final Gson gson = new Gson();
-    private final Type listType = new TypeToken<List<LookupItem>>(){}.getType();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private LookupCache() {}
 
@@ -57,14 +47,26 @@ public class LookupCache {
         return instance;
     }
 
-    public static void clearPrefs(Context ctx) {
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply();
+    public static void clear(Context ctx) {
+        if (instance != null) {
+            instance.loaded  = false;
+            instance.loading = false;
+            instance.portes.clear();
+            instance.ramos.clear();
+            instance.tiposVaga.clear();
+            instance.modalidades.clear();
+            instance.escolaridades.clear();
+            instance.cidades.clear();
+            instance.statusVaga.clear();
+        }
+        Executors.newSingleThreadExecutor()
+                .execute(() -> AppDatabase.get(ctx).lookupDao().deleteAll());
     }
 
     /**
      * 1. Se já tem dados em memória → callback imediato.
-     * 2. Se tem dados salvos no SharedPreferences → callback imediato + refresh em background.
-     * 3. Se não tem nada → busca na API, salva no SharedPreferences, chama callback.
+     * 2. Se tem dados no Room → callback imediato + refresh em background.
+     * 3. Se não tem nada → busca na API, salva no Room, chama callback.
      */
     public void preload(Context ctx, @Nullable OnReady onReady) {
         if (loaded) {
@@ -72,53 +74,56 @@ public class LookupCache {
             return;
         }
 
-        if (loadFromPrefs(ctx)) {
-            loaded = true;
-            if (onReady != null) onReady.onReady();
-            refreshInBackground(ctx);
-            return;
-        }
-
         if (onReady != null) pending.add(onReady);
         if (loading) return;
         loading = true;
-        fetchAll(ctx);
+
+        executor.execute(() -> {
+            boolean hasData = loadFromDb(ctx);
+            main.post(() -> {
+                if (hasData) {
+                    loaded  = true;
+                    loading = false;
+                    for (OnReady cb : pending) cb.onReady();
+                    pending.clear();
+                    refreshInBackground(ctx);
+                } else {
+                    fetchAll(ctx);
+                }
+            });
+        });
     }
 
-    // ── Persistência ──────────────────────────────────────────────────────────
+    // ── Persistência Room ─────────────────────────────────────────────────────
 
-    private boolean loadFromPrefs(Context ctx) {
-        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        String portesJson = p.getString(KEY_PORTES, null);
-        if (portesJson == null) return false;
+    private boolean loadFromDb(Context ctx) {
+        AppDatabase db = AppDatabase.get(ctx);
+        if (db.lookupDao().count() == 0) return false;
 
-        portes.addAll(fromJson(p, KEY_PORTES));
-        ramos.addAll(fromJson(p, KEY_RAMOS));
-        tiposVaga.addAll(fromJson(p, KEY_TIPOS));
-        modalidades.addAll(fromJson(p, KEY_MOD));
-        escolaridades.addAll(fromJson(p, KEY_ESCOL));
-        cidades.addAll(fromJson(p, KEY_CIDADES));
-        statusVaga.addAll(fromJson(p, KEY_STATUS));
+        portes.addAll(       LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_PORTE)));
+        ramos.addAll(        LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_RAMO)));
+        tiposVaga.addAll(    LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_VAGA)));
+        modalidades.addAll(  LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_MODALIDADE)));
+        escolaridades.addAll(LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_ESCOLARIDADE)));
+        cidades.addAll(      LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_CIDADE)));
+        statusVaga.addAll(   LookupEntity.toList(db.lookupDao().getByTipo(LookupEntity.TIPO_STATUS_VAGA)));
         return true;
     }
 
-    private void saveToPrefs(Context ctx) {
-        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-                .putString(KEY_PORTES,  gson.toJson(portes))
-                .putString(KEY_RAMOS,   gson.toJson(ramos))
-                .putString(KEY_TIPOS,   gson.toJson(tiposVaga))
-                .putString(KEY_MOD,     gson.toJson(modalidades))
-                .putString(KEY_ESCOL,   gson.toJson(escolaridades))
-                .putString(KEY_CIDADES, gson.toJson(cidades))
-                .putString(KEY_STATUS,  gson.toJson(statusVaga))
-                .apply();
-    }
-
-    private List<LookupItem> fromJson(SharedPreferences p, String key) {
-        String json = p.getString(key, null);
-        if (json == null) return new ArrayList<>();
-        List<LookupItem> list = gson.fromJson(json, listType);
-        return list != null ? list : new ArrayList<>();
+    private void saveToDb(Context ctx) {
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.get(ctx);
+            db.lookupDao().deleteAll();
+            List<LookupEntity> all = new ArrayList<>();
+            all.addAll(LookupEntity.fromList(portes,        LookupEntity.TIPO_PORTE));
+            all.addAll(LookupEntity.fromList(ramos,         LookupEntity.TIPO_RAMO));
+            all.addAll(LookupEntity.fromList(tiposVaga,     LookupEntity.TIPO_VAGA));
+            all.addAll(LookupEntity.fromList(modalidades,   LookupEntity.TIPO_MODALIDADE));
+            all.addAll(LookupEntity.fromList(escolaridades, LookupEntity.TIPO_ESCOLARIDADE));
+            all.addAll(LookupEntity.fromList(cidades,       LookupEntity.TIPO_CIDADE));
+            all.addAll(LookupEntity.fromList(statusVaga,    LookupEntity.TIPO_STATUS_VAGA));
+            db.lookupDao().insertAll(all);
+        });
     }
 
     // ── Fetch da API ──────────────────────────────────────────────────────────
@@ -129,7 +134,7 @@ public class LookupCache {
 
         Runnable tick = () -> {
             if (remaining.decrementAndGet() == 0) {
-                saveToPrefs(ctx);
+                saveToDb(ctx);
                 loaded  = true;
                 loading = false;
                 for (OnReady cb : pending) cb.onReady();
@@ -146,13 +151,12 @@ public class LookupCache {
         fetch(api.listarStatusVaga(),    statusVaga,    tick);
     }
 
-    /** Refresh silencioso em background após carregar do SharedPreferences. */
     private void refreshInBackground(Context ctx) {
         ApiService api = ApiClient.getService(ctx);
         AtomicInteger remaining = new AtomicInteger(7);
 
         Runnable tick = () -> {
-            if (remaining.decrementAndGet() == 0) saveToPrefs(ctx);
+            if (remaining.decrementAndGet() == 0) saveToDb(ctx);
         };
 
         fetch(api.listarPortes(),        portes,        tick);
@@ -185,11 +189,11 @@ public class LookupCache {
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public List<LookupItem> getPortes()       { return portes; }
-    public List<LookupItem> getRamos()         { return ramos; }
-    public List<LookupItem> getTiposVaga()     { return tiposVaga; }
-    public List<LookupItem> getModalidades()   { return modalidades; }
-    public List<LookupItem> getEscolaridades() { return escolaridades; }
-    public List<LookupItem> getCidades()       { return cidades; }
-    public List<LookupItem> getStatusVaga()    { return statusVaga; }
+    public List<LookupItem> getPortes()        { return portes; }
+    public List<LookupItem> getRamos()          { return ramos; }
+    public List<LookupItem> getTiposVaga()      { return tiposVaga; }
+    public List<LookupItem> getModalidades()    { return modalidades; }
+    public List<LookupItem> getEscolaridades()  { return escolaridades; }
+    public List<LookupItem> getCidades()        { return cidades; }
+    public List<LookupItem> getStatusVaga()     { return statusVaga; }
 }
