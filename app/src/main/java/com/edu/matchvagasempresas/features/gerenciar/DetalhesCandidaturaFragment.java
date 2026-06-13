@@ -25,9 +25,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.edu.matchvagasempresas.BuildConfig;
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.data.local.SessionManager;
-import com.edu.matchvagasempresas.data.remote.RetrofitClient;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.ExperienciaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.FormacaoResponse;
@@ -203,7 +203,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
         showLoading("Obtendo currículo…");
 
         String token = new SessionManager(requireContext()).getToken();
-        String url = RetrofitClient.BASE_URL + "/api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
+        String url = BuildConfig.BASE_URL + "api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
 
         OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).build();
         Request request = new Request.Builder()

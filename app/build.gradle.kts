@@ -18,6 +18,8 @@ android {
         versionName = "0.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "BASE_URL", "\"https://backend-production-7396d.up.railway.app/\"")
     }
 
     buildFeatures {

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/primary"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -49,7 +49,7 @@
                         android:layout_width="56dp"
                         android:layout_height="56dp"
                         app:cardCornerRadius="28dp"
-                        app:cardBackgroundColor="#FFFFFF33"
+                        app:cardBackgroundColor="?attr/colorSurface"
                         android:layout_marginEnd="16dp">
 
                         <ImageView
@@ -72,7 +72,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/bem_vindo"
                             android:textSize="12sp"
-                            android:textColor="#FFFFFFCC" />
+                            android:textColor="?attr/colorOnPrimaryContainer" />
 
                         <TextView
                             android:id="@+id/tv_nome_empresa"
@@ -81,7 +81,7 @@
                             android:text="@string/empresa_placeholder"
                             android:textSize="18sp"
                             android:textStyle="bold"
-                            android:textColor="@color/white" />
+                            android:textColor="?attr/colorOnPrimaryContainer" />
 
                         <TextView
                             android:id="@+id/tv_cnpj"
@@ -89,7 +89,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/cnpj_placeholder"
                             android:textSize="12sp"
-                            android:textColor="#FFFFFFAA" />
+                            android:textColor="?attr/colorOnPrimaryContainer" />
                     </LinearLayout>
 
                     <ImageView
@@ -97,6 +97,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_logout"
+                        app:tint="?attr/colorOnPrimaryContainer"
                         android:contentDescription="@string/btn_logout"
                         android:clickable="true"
                         android:focusable="true"
@@ -110,9 +111,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#FFF3E0"
+                app:cardBackgroundColor="@color/warning_container"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -135,7 +136,7 @@
                         android:layout_weight="1"
                         android:text="Empresa aguardando aprovação. Você poderá publicar vagas após a aprovação do administrador."
                         android:textSize="13sp"
-                        android:textColor="#E65100" />
+                        android:textColor="@color/on_warning_container" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -150,9 +151,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/surface"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                     android:layout_marginEnd="6dp">
 
                     <LinearLayout
@@ -169,14 +170,14 @@
                             android:text="0"
                             android:textSize="28sp"
                             android:textStyle="bold"
-                            android:textColor="@color/primary" />
+                            android:textColor="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_vagas_ativas"
                             android:textSize="11sp"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:gravity="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -185,9 +186,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/surface"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                     android:layout_marginStart="6dp"
                     android:layout_marginEnd="6dp">
 
@@ -205,14 +206,14 @@
                             android:text="0"
                             android:textSize="28sp"
                             android:textStyle="bold"
-                            android:textColor="@color/accent" />
+                            android:textColor="?attr/colorSecondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_candidaturas_recebidas"
                             android:textSize="11sp"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:gravity="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -221,9 +222,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/surface"
+                    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                     android:layout_marginStart="6dp">
 
                     <LinearLayout
@@ -240,14 +241,14 @@
                             android:text="0"
                             android:textSize="28sp"
                             android:textStyle="bold"
-                            android:textColor="@color/error" />
+                            android:textColor="?attr/colorError" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_vagas_expiradas"
                             android:textSize="11sp"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:gravity="center" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -268,14 +269,14 @@
                     android:text="@string/vagas_recentes"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/tv_ver_todas"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/ver_todas"
-                    android:textColor="@color/primary"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="13sp"
                     android:padding="4dp"
                     android:clickable="true"

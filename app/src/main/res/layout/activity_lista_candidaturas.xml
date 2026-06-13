@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
-            android:background="@color/primary"
+            android:background="?attr/colorPrimaryContainer"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:paddingTop="4dp"
@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="SELECIONE A VAGA"
                 android:textSize="10sp"
-                android:textColor="#FFFFFFAA"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:letterSpacing="0.08"
                 android:layout_marginBottom="6dp" />
 
@@ -45,9 +45,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                app:boxBackgroundColor="@color/white"
-                app:boxStrokeColor="@color/primary"
-                app:hintTextColor="@color/text_secondary"
+                app:boxBackgroundColor="?attr/colorSurface"
+                app:boxStrokeColor="?attr/colorPrimary"
+                app:hintTextColor="?attr/colorOnSurfaceVariant"
                 app:boxCornerRadiusTopStart="8dp"
                 app:boxCornerRadiusTopEnd="8dp"
                 app:boxCornerRadiusBottomStart="8dp"
@@ -59,7 +59,7 @@
                     android:layout_height="wrap_content"
                     android:hint="Selecione uma vaga"
                     android:inputType="none"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
@@ -75,14 +75,14 @@
             android:paddingEnd="20dp"
             android:paddingTop="4dp"
             android:paddingBottom="12dp"
-            android:background="@color/primary"
+            android:background="?attr/colorPrimaryContainer"
             android:visibility="gone">
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_business"
-                android:tint="#FFFFFFCC"
+                android:tint="?attr/colorOnPrimaryContainer"
                 android:layout_marginEnd="8dp" />
 
             <LinearLayout
@@ -96,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:text="VAGA SELECIONADA"
                     android:textSize="9sp"
-                    android:textColor="#FFFFFF99"
+                    android:textColor="?attr/colorOnPrimaryContainer"
                     android:letterSpacing="0.08"
                     android:layout_marginBottom="2dp" />
 
@@ -107,7 +107,7 @@
                     android:text="Desenvolvedor Android Sênior"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:textColor="@color/white" />
+                    android:textColor="?attr/colorOnPrimaryContainer" />
             </LinearLayout>
         </LinearLayout>
 
@@ -116,7 +116,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
-            android:background="@color/surface">
+            android:background="?attr/colorSurfaceContainerLow">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chip_group_status"
@@ -213,14 +213,14 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:src="@drawable/ic_people"
-            android:tint="@color/text_hint"
+            android:tint="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="16dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/nenhuma_candidatura"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="16sp"
             android:textStyle="bold"
             android:gravity="center" />
@@ -229,7 +229,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tente ajustar o filtro de status"
-            android:textColor="@color/text_hint"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:gravity="center"
             android:layout_marginTop="4dp" />

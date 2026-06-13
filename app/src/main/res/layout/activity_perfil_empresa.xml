@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -34,9 +34,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/primary"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -56,7 +56,7 @@
                             android:layout_width="88dp"
                             android:layout_height="88dp"
                             app:cardCornerRadius="44dp"
-                            app:cardBackgroundColor="#FFFFFF22"
+                            app:cardBackgroundColor="?attr/colorSurface"
                             android:clickable="true"
                             android:focusable="true">
 
@@ -76,14 +76,14 @@
                             android:layout_height="32dp"
                             android:layout_gravity="center"
                             android:visibility="gone"
-                            android:indeterminateTint="@color/white" />
+                            android:indeterminateTint="?attr/colorOnPrimaryContainer" />
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:layout_gravity="bottom|end"
                             app:cardCornerRadius="14dp"
-                            app:cardBackgroundColor="@color/white"
+                            app:cardBackgroundColor="?attr/colorSurface"
                             app:cardElevation="2dp"
                             android:clickable="false"
                             android:focusable="false">
@@ -103,7 +103,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
-                        android:textColor="@color/white"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -111,7 +111,7 @@
                         android:id="@+id/tv_ramo_atuacao"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#FFFFFFCC"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="13sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -130,9 +130,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -147,7 +147,7 @@
                         android:text="@string/label_info_empresa"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="16dp" />
 
                     <!-- CNPJ -->
@@ -156,7 +156,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_cnpj"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
                     <TextView
                         android:id="@+id/tv_cnpj"
@@ -164,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:text="00.000.000/0001-00"
                         android:textSize="15sp"
-                        android:textColor="@color/text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="14dp" />
 
                     <!-- Razão Social -->
@@ -173,7 +173,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_razao_social"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
 
                     <TextView
@@ -181,7 +181,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:textColor="@color/text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp" />
 
                     <!-- Porte -->
@@ -190,7 +190,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_porte"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
 
                     <TextView
@@ -198,7 +198,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:textColor="@color/text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="15sp" />
 
                     <!-- Descrição -->
@@ -207,14 +207,14 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_descricao"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
 
                     <TextView
                         android:id="@+id/tv_descricao"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:textSize="14sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -223,9 +223,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -240,7 +240,7 @@
                         android:text="@string/label_contato_empresa"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="16dp" />
 
                     <!-- Site -->
@@ -249,7 +249,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_site"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
                     <TextView
                         android:id="@+id/tv_site"
@@ -257,7 +257,7 @@
                         android:layout_height="wrap_content"
                         android:text="https://www.empresaxyz.com.br"
                         android:textSize="14sp"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="14dp" />
 
                     <!-- Telefone -->
@@ -266,7 +266,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/label_telefone"
                         android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="2dp" />
                     <TextView
                         android:id="@+id/tv_telefone"
@@ -274,7 +274,7 @@
                         android:layout_height="wrap_content"
                         android:text="(11) 3000-0000"
                         android:textSize="14sp"
-                        android:textColor="@color/text_primary" />
+                        android:textColor="?attr/colorOnSurface" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -39,9 +39,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -56,7 +56,7 @@
                         android:text="@string/label_info_candidato"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="16dp" />
 
                     <LinearLayout
@@ -70,7 +70,7 @@
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             app:cardCornerRadius="28dp"
-                            app:cardBackgroundColor="@color/primary_light"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
                             android:layout_marginEnd="16dp">
 
                             <TextView
@@ -80,7 +80,7 @@
                                 android:text="AB"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/primary"
+                                android:textColor="?attr/colorPrimary"
                                 android:gravity="center" />
                         </com.google.android.material.card.MaterialCardView>
 
@@ -97,7 +97,7 @@
                                 android:text="Ana Beatriz Silva"
                                 android:textSize="17sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/text_primary" />
+                                android:textColor="?attr/colorOnSurface" />
 
                             <TextView
                                 android:id="@+id/tv_data_candidatura"
@@ -105,14 +105,14 @@
                                 android:layout_height="wrap_content"
                                 android:text="Candidatou-se em 01/05/2026"
                                 android:textSize="12sp"
-                                android:textColor="@color/text_secondary" />
+                                android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/divider"
+                        android:background="?attr/colorOutlineVariant"
                         android:layout_marginBottom="16dp" />
 
                     <!-- Contato -->
@@ -122,7 +122,7 @@
                         android:text="@string/label_contato"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
@@ -131,7 +131,7 @@
                         android:layout_height="wrap_content"
                         android:text="ana.silva@email.com"
                         android:textSize="14sp"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="4dp" />
 
                     <TextView
@@ -140,7 +140,7 @@
                         android:layout_height="wrap_content"
                         android:text="(11) 99999-9999"
                         android:textSize="14sp"
-                        android:textColor="@color/text_primary"
+                        android:textColor="?attr/colorOnSurface"
                         android:layout_marginBottom="12dp" />
 
                     <TextView
@@ -149,7 +149,7 @@
                         android:text="ENDEREÇO"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="4dp" />
 
                     <TextView
@@ -157,7 +157,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
-                        android:textColor="@color/text_primary" />
+                        android:textColor="?attr/colorOnSurface" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -166,9 +166,9 @@
                 android:id="@+id/card_perfil_compartilhado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -182,7 +182,7 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:background="@color/primary_light"
+                        android:background="?attr/colorPrimaryContainer"
                         android:padding="16dp">
 
                         <LinearLayout
@@ -197,22 +197,22 @@
                                 android:text="Perfil Compartilhado"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/primary_dark" />
+                                android:textColor="?attr/colorPrimary" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Informações autorizadas pelo candidato"
                                 android:textSize="11sp"
-                                android:textColor="@color/primary"
+                                android:textColor="?attr/colorPrimary"
                                 android:layout_marginTop="2dp" />
                         </LinearLayout>
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            app:cardCornerRadius="12dp"
-                            app:cardBackgroundColor="@color/primary"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="?attr/colorPrimary"
                             app:cardElevation="0dp">
 
                             <TextView
@@ -220,7 +220,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Perfil"
                                 android:textSize="11sp"
-                                android:textColor="@color/white"
+                                android:textColor="?attr/colorOnPrimary"
                                 android:textStyle="bold"
                                 android:paddingLeft="10dp"
                                 android:paddingRight="10dp"
@@ -246,7 +246,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="14dp"
-                                android:background="@color/primary"
+                                android:background="?attr/colorPrimary"
                                 android:layout_marginEnd="8dp" />
 
                             <TextView
@@ -255,7 +255,7 @@
                                 android:text="Formação Acadêmica"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/primary" />
+                                android:textColor="?attr/colorPrimary" />
                         </LinearLayout>
 
                         <!-- Escolaridade -->
@@ -268,7 +268,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="match_parent"
-                                android:background="@color/primary_light"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:layout_marginEnd="12dp" />
 
                             <LinearLayout
@@ -282,7 +282,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="Escolaridade"
                                     android:textSize="11sp"
-                                    android:textColor="@color/text_secondary"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:layout_marginBottom="2dp" />
 
                                 <TextView
@@ -290,7 +290,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textSize="14sp"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="?attr/colorOnSurface" />
                             </LinearLayout>
                         </LinearLayout>
 
@@ -304,7 +304,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="match_parent"
-                                android:background="@color/primary_light"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:layout_marginEnd="12dp" />
 
                             <LinearLayout
@@ -318,7 +318,7 @@
                                     android:layout_height="wrap_content"
                                     android:text="Área de Formação"
                                     android:textSize="11sp"
-                                    android:textColor="@color/text_secondary"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:layout_marginBottom="2dp" />
 
                                 <TextView
@@ -326,7 +326,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textSize="14sp"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="?attr/colorOnSurface" />
                             </LinearLayout>
                         </LinearLayout>
 
@@ -341,7 +341,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="14dp"
-                                android:background="@color/accent"
+                                android:background="?attr/colorSecondary"
                                 android:layout_marginEnd="8dp" />
 
                             <TextView
@@ -350,7 +350,7 @@
                                 android:text="Experiência Profissional"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/accent" />
+                                android:textColor="?attr/colorSecondary" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -362,7 +362,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="match_parent"
-                                android:background="@color/chip_bg"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:layout_marginEnd="12dp" />
 
                             <TextView
@@ -371,7 +371,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:textSize="14sp"
-                                android:textColor="@color/text_primary"
+                                android:textColor="?attr/colorOnSurface"
                                 android:lineSpacingMultiplier="1.4" />
                         </LinearLayout>
 
@@ -386,7 +386,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="14dp"
-                                android:background="@color/primary"
+                                android:background="?attr/colorPrimary"
                                 android:layout_marginEnd="8dp" />
 
                             <TextView
@@ -395,7 +395,7 @@
                                 android:text="Resumo Profissional"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/primary" />
+                                android:textColor="?attr/colorPrimary" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -407,7 +407,7 @@
                             <View
                                 android:layout_width="3dp"
                                 android:layout_height="match_parent"
-                                android:background="@color/primary_light"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:layout_marginEnd="12dp" />
 
                             <TextView
@@ -416,7 +416,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:textSize="14sp"
-                                android:textColor="@color/text_primary"
+                                android:textColor="?attr/colorOnSurface"
                                 android:lineSpacingMultiplier="1.4" />
                         </LinearLayout>
 
@@ -433,7 +433,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:orientation="vertical"
-                                android:background="@color/primary_light"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:padding="12dp"
                                 android:layout_marginEnd="8dp">
 
@@ -448,7 +448,7 @@
                                         android:layout_width="14dp"
                                         android:layout_height="14dp"
                                         android:src="@drawable/ic_calendar"
-                                        android:tint="@color/primary"
+                                        android:tint="?attr/colorPrimary"
                                         android:layout_marginEnd="5dp" />
 
                                     <TextView
@@ -456,7 +456,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="Disponibilidade"
                                         android:textSize="10sp"
-                                        android:textColor="@color/primary"
+                                        android:textColor="?attr/colorPrimary"
                                         android:textStyle="bold" />
                                 </LinearLayout>
 
@@ -465,7 +465,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textSize="13sp"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="?attr/colorOnSurface" />
                             </LinearLayout>
 
                             <!-- Pretensão Salarial -->
@@ -474,7 +474,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:orientation="vertical"
-                                android:background="@color/primary_light"
+                                android:background="?attr/colorPrimaryContainer"
                                 android:padding="12dp">
 
                                 <LinearLayout
@@ -498,7 +498,7 @@
                                         android:layout_height="wrap_content"
                                         android:text="Pretensão"
                                         android:textSize="10sp"
-                                        android:textColor="@color/primary"
+                                        android:textColor="?attr/colorPrimary"
                                         android:textStyle="bold" />
                                 </LinearLayout>
 
@@ -507,14 +507,14 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:textSize="13sp"
-                                    android:textColor="@color/text_primary" />
+                                    android:textColor="?attr/colorOnSurface" />
                             </LinearLayout>
                         </LinearLayout>
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:background="@color/divider"
+                            android:background="?attr/colorOutlineVariant"
                             android:layout_marginBottom="16dp" />
 
                         <!-- Botão Currículo -->
@@ -527,7 +527,7 @@
                             app:cornerRadius="8dp"
                             app:icon="@drawable/ic_document"
                             app:iconGravity="textStart"
-                            app:iconTint="@color/primary" />
+                            app:iconTint="?attr/colorPrimary" />
 
                         <TextView
                             android:id="@+id/tv_curriculo_status"
@@ -546,10 +546,10 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/primary_light"
-                app:strokeColor="@color/primary"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                app:strokeColor="?attr/colorPrimary"
                 app:strokeWidth="1dp"
                 android:layout_marginBottom="16dp">
 
@@ -564,14 +564,14 @@
                         android:layout_width="44dp"
                         android:layout_height="44dp"
                         app:cardCornerRadius="22dp"
-                        app:cardBackgroundColor="@color/primary"
+                        app:cardBackgroundColor="?attr/colorPrimary"
                         android:layout_marginEnd="16dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_business"
-                            android:tint="@color/white"
+                            android:tint="?attr/colorOnPrimary"
                             android:layout_gravity="center" />
                     </com.google.android.material.card.MaterialCardView>
 
@@ -588,7 +588,7 @@
                             android:textSize="10sp"
                             android:textAllCaps="true"
                             android:letterSpacing="0.08"
-                            android:textColor="@color/primary"
+                            android:textColor="?attr/colorPrimary"
                             android:layout_marginBottom="4dp" />
 
                         <TextView
@@ -598,7 +598,7 @@
                             android:text="Desenvolvedor Android Sênior"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/primary_dark" />
+                            android:textColor="?attr/colorPrimary" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -607,9 +607,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -624,7 +624,7 @@
                         android:text="@string/label_status_atual"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="8dp" />
 
                     <TextView
@@ -640,7 +640,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/divider"
+                        android:background="?attr/colorOutlineVariant"
                         android:layout_marginBottom="20dp" />
 
                     <TextView
@@ -649,7 +649,7 @@
                         android:text="@string/label_alterar_status"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary"
+                        android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="12dp" />
 
                     <com.google.android.material.textfield.TextInputLayout

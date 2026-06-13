@@ -1,22 +1,20 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <style name="Base.Theme.MatchvagasEmpresas" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_light</item>
         <item name="colorOnPrimaryContainer">@color/primary_dark</item>
         <item name="colorSecondary">@color/accent</item>
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/surface</item>
         <item name="colorError">@color/error</item>
-        <item name="android:statusBarColor" tools:targetApi="l">@color/primary_dark</item>
     </style>
 
     <style name="Theme.MatchvagasEmpresas" parent="Base.Theme.MatchvagasEmpresas" />
 
-    <style name="Toolbar.App" parent="Widget.Material3.Toolbar">
-        <item name="android:background">@color/primary</item>
-        <item name="titleTextColor">@color/white</item>
-        <item name="navigationIconTint">@color/white</item>
+    <style name="Toolbar.App" parent="Widget.Material3.Toolbar.OnSurface">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
+        <item name="titleTextAppearance">@style/TextAppearance.Material3.TitleLarge</item>
     </style>
 
     <style name="Badge.Status" parent="Widget.Material3.Chip.Assist">

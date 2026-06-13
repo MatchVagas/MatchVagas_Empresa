@@ -16,8 +16,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    public static final String BASE_URL = "https://backend-tgi8.onrender.com";
-
     private static final long CACHE_SIZE = 5L * 1024 * 1024;
     private static final int CONNECT_TIMEOUT = 10;
     private static final int READ_TIMEOUT = 30;
@@ -42,7 +40,7 @@ public class RetrofitClient {
         }
 
         apiService = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(BuildConfig.BASE_URL)
                 .client(builder.build())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
