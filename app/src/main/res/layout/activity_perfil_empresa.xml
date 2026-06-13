@@ -65,6 +65,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_business"
+                                android:tint="?attr/colorPrimary"
                                 android:scaleType="centerInside"
                                 android:padding="20dp"
                                 android:contentDescription="@string/label_info_empresa" />

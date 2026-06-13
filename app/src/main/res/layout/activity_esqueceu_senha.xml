@@ -33,6 +33,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_business"
+                    android:tint="?attr/colorOnPrimary"
                     android:scaleType="centerInside"
                     android:padding="16dp"
                     android:contentDescription="@string/app_name" />
