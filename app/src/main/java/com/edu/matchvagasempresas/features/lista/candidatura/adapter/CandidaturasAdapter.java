@@ -102,22 +102,24 @@ public class CandidaturasAdapter extends RecyclerView.Adapter<CandidaturasAdapte
     private int badgeParaStatus(String status) {
         if (status == null) return R.drawable.bg_badge_pendente;
         switch (status.toLowerCase()) {
-            case "aprovado":    return R.drawable.bg_badge_aprovado;
-            case "reprovado":   return R.drawable.bg_badge_reprovado;
-            case "em análise":  return R.drawable.bg_badge_analise;
-            case "contratado":  return R.drawable.bg_badge_ativa;
-            default:            return R.drawable.bg_badge_pendente;
+            case "aprovado":             return R.drawable.bg_badge_aprovado;
+            case "reprovado":            return R.drawable.bg_badge_reprovado;
+            case "em análise":           return R.drawable.bg_badge_analise;
+            case "entrevista agendada":  return R.drawable.bg_badge_entrevista;
+            case "contratado":           return R.drawable.bg_badge_ativa;
+            default:                     return R.drawable.bg_badge_pendente;
         }
     }
 
     private int corParaStatus(String status) {
         if (status == null) return ContextCompat.getColor(context, R.color.status_pendente);
         switch (status.toLowerCase()) {
-            case "aprovado":    return ContextCompat.getColor(context, R.color.status_aprovado);
-            case "reprovado":   return ContextCompat.getColor(context, R.color.status_reprovado);
-            case "em análise":  return ContextCompat.getColor(context, R.color.status_analise);
-            case "contratado":  return ContextCompat.getColor(context, R.color.status_ativa);
-            default:            return ContextCompat.getColor(context, R.color.status_pendente);
+            case "aprovado":             return ContextCompat.getColor(context, R.color.status_aprovado);
+            case "reprovado":            return ContextCompat.getColor(context, R.color.status_reprovado);
+            case "em análise":           return ContextCompat.getColor(context, R.color.status_analise);
+            case "entrevista agendada":  return ContextCompat.getColor(context, R.color.status_entrevista);
+            case "contratado":           return ContextCompat.getColor(context, R.color.status_ativa);
+            default:                     return ContextCompat.getColor(context, R.color.status_pendente);
         }
     }
 

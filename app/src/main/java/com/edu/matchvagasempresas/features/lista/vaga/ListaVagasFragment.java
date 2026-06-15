@@ -1,6 +1,8 @@
 package com.edu.matchvagasempresas.features.lista.vaga;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.data.remote.dto.VagaResponse;
 import com.edu.matchvagasempresas.features.lista.vaga.adapter.VagasAdapter;
+import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class ListaVagasFragment extends Fragment {
 
@@ -25,6 +33,9 @@ public class ListaVagasFragment extends Fragment {
     private VagasAdapter adapter;
     private SwipeRefreshLayout swipeRefresh;
     private View tvNenhumaVaga;
+
+    private final List<VagaResponse> todasVagas = new ArrayList<>();
+    private String filtroAtual = "";
 
     @Nullable
     @Override
@@ -78,23 +89,28 @@ public class ListaVagasFragment extends Fragment {
         });
         rv.setAdapter(adapter);
 
-        viewModel.getVagasCached().observe(getViewLifecycleOwner(), vagas -> {
-            adapter.submitList(vagas);
-            atualizarEstadoVazio(vagas);
+        TextInputEditText etPesquisar = view.findViewById(R.id.et_pesquisar);
+        etPesquisar.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                filtroAtual = s != null ? s.toString().trim() : "";
+                aplicarFiltro();
+            }
         });
 
-        viewModel.getVagasFresh().observe(getViewLifecycleOwner(), vagas -> {
-            adapter.submitList(vagas);
-            atualizarEstadoVazio(vagas);
-        });
+        viewModel.getVagasCached().observe(getViewLifecycleOwner(), this::atualizarLista);
+
+        viewModel.getVagasFresh().observe(getViewLifecycleOwner(), this::atualizarLista);
 
         viewModel.getRefreshResult().observe(getViewLifecycleOwner(), resource -> {
             swipeRefresh.setRefreshing(false);
             switch (resource.getStatus()) {
                 case SUCCESS:
                     if (resource.getData() != null) {
-                        adapter.submitList(resource.getData());
-                        atualizarEstadoVazio(resource.getData());
+                        atualizarLista(resource.getData());
                     }
                     break;
                 case ERROR:
@@ -105,6 +121,36 @@ public class ListaVagasFragment extends Fragment {
         });
 
         viewModel.carregarVagas();
+    }
+
+    private void atualizarLista(List<VagaResponse> vagas) {
+        todasVagas.clear();
+        if (vagas != null) todasVagas.addAll(vagas);
+        aplicarFiltro();
+    }
+
+    private void aplicarFiltro() {
+        List<VagaResponse> filtradas;
+        if (filtroAtual.isEmpty()) {
+            filtradas = new ArrayList<>(todasVagas);
+        } else {
+            String termo = filtroAtual.toLowerCase(Locale.getDefault());
+            filtradas = new ArrayList<>();
+            for (VagaResponse v : todasVagas) {
+                if (contem(v.titulo, termo)
+                        || contem(v.areaAtuacao, termo)
+                        || contem(v.modalidadeDescricao, termo)
+                        || contem(v.tipoVagaDescricao, termo)) {
+                    filtradas.add(v);
+                }
+            }
+        }
+        adapter.submitList(filtradas);
+        atualizarEstadoVazio(filtradas);
+    }
+
+    private boolean contem(String campo, String termo) {
+        return campo != null && campo.toLowerCase(Locale.getDefault()).contains(termo);
     }
 
     private void atualizarEstadoVazio(java.util.List<?> lista) {

@@ -9,8 +9,12 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.edu.matchvagasempresas.core.utils.Resource;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.HistoricoStatusResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.data.repository.CandidaturaRepositoryImpl;
 import com.edu.matchvagasempresas.domain.repository.CandidaturaRepository;
+
+import java.util.List;
 
 public class DetalhesCandidaturaViewModel extends AndroidViewModel {
 
@@ -18,6 +22,10 @@ public class DetalhesCandidaturaViewModel extends AndroidViewModel {
     private final MutableLiveData<Resource<CandidaturaEmpresaResponse>> candidatura =
             new MutableLiveData<>();
     private final MutableLiveData<Resource<CandidaturaEmpresaResponse>> statusResult =
+            new MutableLiveData<>();
+    private final MutableLiveData<Resource<List<LookupItem>>> statusOpcoes =
+            new MutableLiveData<>();
+    private final MutableLiveData<Resource<List<HistoricoStatusResponse>>> historico =
             new MutableLiveData<>();
 
     public DetalhesCandidaturaViewModel(@NonNull Application application) {
@@ -27,6 +35,38 @@ public class DetalhesCandidaturaViewModel extends AndroidViewModel {
 
     public LiveData<Resource<CandidaturaEmpresaResponse>> getCandidatura() { return candidatura; }
     public LiveData<Resource<CandidaturaEmpresaResponse>> getStatusResult() { return statusResult; }
+    public LiveData<Resource<List<LookupItem>>> getStatusOpcoes() { return statusOpcoes; }
+    public LiveData<Resource<List<HistoricoStatusResponse>>> getHistorico() { return historico; }
+
+    public void carregarHistorico(long candidaturaId) {
+        historico.setValue(Resource.loading());
+        candidaturaRepository.listarHistoricoStatus(candidaturaId,
+                new CandidaturaRepository.Callback<List<HistoricoStatusResponse>>() {
+                    @Override
+                    public void onSuccess(List<HistoricoStatusResponse> data) {
+                        historico.postValue(Resource.success(data));
+                    }
+                    @Override
+                    public void onError(String message) {
+                        historico.postValue(Resource.error(message));
+                    }
+                });
+    }
+
+    public void carregarStatusOpcoes() {
+        statusOpcoes.setValue(Resource.loading());
+        candidaturaRepository.listarStatusCandidatura(
+                new CandidaturaRepository.Callback<List<LookupItem>>() {
+                    @Override
+                    public void onSuccess(List<LookupItem> data) {
+                        statusOpcoes.postValue(Resource.success(data));
+                    }
+                    @Override
+                    public void onError(String message) {
+                        statusOpcoes.postValue(Resource.error(message));
+                    }
+                });
+    }
 
     public void carregarCandidatura(long id) {
         candidatura.setValue(Resource.loading());
@@ -50,6 +90,8 @@ public class DetalhesCandidaturaViewModel extends AndroidViewModel {
                     @Override
                     public void onSuccess(CandidaturaEmpresaResponse data) {
                         statusResult.postValue(Resource.success(data));
+                        // Trilha de auditoria pode ter crescido: recarrega o histórico.
+                        carregarHistorico(candidaturaId);
                     }
                     @Override
                     public void onError(String message) {

@@ -38,6 +38,13 @@ public class AuthRepositoryImpl implements AuthRepository {
                                    @NonNull Response<AuthResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     AuthResponse auth = response.body();
+                    // Este app é exclusivo para empresas: candidatos não têm acesso.
+                    // Bloqueia antes de persistir token/sessão ou buscar a empresa.
+                    if (auth.perfil != null && auth.perfil.equalsIgnoreCase("CANDIDATO")) {
+                        callback.onError("Este aplicativo é exclusivo para empresas. "
+                                + "Use o app do candidato para acessar sua conta.");
+                        return;
+                    }
                     RetrofitClient.reset();
                     apiService.minhaEmpresa().enqueue(new Callback<EmpresaResponse>() {
                         @Override

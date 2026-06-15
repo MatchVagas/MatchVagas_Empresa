@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.edu.matchvagasempresas.core.utils.Resource;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.data.remote.dto.VagaResponse;
 import com.edu.matchvagasempresas.data.repository.CandidaturaRepositoryImpl;
 import com.edu.matchvagasempresas.data.repository.VagaRepositoryImpl;
@@ -26,6 +27,7 @@ public class ListaCandidaturasViewModel extends AndroidViewModel {
     private final MutableLiveData<List<CandidaturaEmpresaResponse>> candidaturasFresh = new MutableLiveData<>();
     private final MutableLiveData<Resource<List<CandidaturaEmpresaResponse>>> refreshResult = new MutableLiveData<>();
     private final MutableLiveData<List<VagaResponse>> vagas = new MutableLiveData<>();
+    private final MutableLiveData<List<LookupItem>> statusOpcoes = new MutableLiveData<>();
 
     public ListaCandidaturasViewModel(@NonNull Application application) {
         super(application);
@@ -37,6 +39,19 @@ public class ListaCandidaturasViewModel extends AndroidViewModel {
     public LiveData<List<CandidaturaEmpresaResponse>> getCandidaturasFresh() { return candidaturasFresh; }
     public LiveData<Resource<List<CandidaturaEmpresaResponse>>> getRefreshResult() { return refreshResult; }
     public LiveData<List<VagaResponse>> getVagas() { return vagas; }
+    public LiveData<List<LookupItem>> getStatusOpcoes() { return statusOpcoes; }
+
+    public void carregarStatusOpcoes() {
+        candidaturaRepository.listarStatusCandidatura(
+                new CandidaturaRepository.Callback<List<LookupItem>>() {
+                    @Override
+                    public void onSuccess(List<LookupItem> data) {
+                        if (data != null) statusOpcoes.postValue(data);
+                    }
+                    @Override
+                    public void onError(String message) { /* mantém só o chip "Todas" */ }
+                });
+    }
 
     public void carregarCandidaturas(long vagaId) {
         candidaturaRepository.loadCandidaturas(vagaId,

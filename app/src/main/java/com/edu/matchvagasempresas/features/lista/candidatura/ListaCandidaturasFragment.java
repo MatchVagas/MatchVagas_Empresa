@@ -21,8 +21,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.edu.matchvagasempresas.R;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.data.remote.dto.VagaResponse;
 import com.edu.matchvagasempresas.features.lista.candidatura.adapter.CandidaturasAdapter;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
@@ -114,6 +116,10 @@ public class ListaCandidaturasFragment extends Fragment {
             bindSeletorVaga(view);
         });
 
+        viewModel.getStatusOpcoes().observe(getViewLifecycleOwner(),
+                statusList -> popularChipsStatus(view, statusList));
+        viewModel.carregarStatusOpcoes();
+
         vagaIdFixo = getArguments() != null ? getArguments().getLong("vagaId", -1) : -1;
 
         if (vagaIdFixo > 0) {
@@ -176,19 +182,38 @@ public class ListaCandidaturasFragment extends Fragment {
     private void setupFiltros(View view) {
         ChipGroup chips = view.findViewById(R.id.chip_group_status);
         if (chips == null) return;
+        // O chip "Todas" (R.id.chip_todas) limpa o filtro; os demais carregam
+        // o nome do status no tag, definido ao gerar os chips dinamicamente.
         chips.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) return;
-            int id = checkedIds.get(0);
-            if (id == R.id.chip_proposta_enviada)       filtroAtivo = "PROPOSTA_ENVIADA";
-            else if (id == R.id.chip_em_analise)        filtroAtivo = "EM_ANALISE";
-            else if (id == R.id.chip_aprovado)          filtroAtivo = "APROVADO";
-            else if (id == R.id.chip_reprovado)         filtroAtivo = "REPROVADO";
-            else if (id == R.id.chip_em_entrevista)     filtroAtivo = "EM_ENTREVISTA";
-            else if (id == R.id.chip_contratado)        filtroAtivo = "CONTRATADO";
-            else if (id == R.id.chip_desistiu)          filtroAtivo = "DESISTIU";
-            else                                        filtroAtivo = null;
+            View chip = group.findViewById(checkedIds.get(0));
+            Object tag = chip != null ? chip.getTag() : null;
+            filtroAtivo = tag instanceof String ? (String) tag : null;
             aplicarFiltro(filtroAtivo);
         });
+    }
+
+    /** Gera um chip por status retornado pela API, preservando o chip "Todas". */
+    private void popularChipsStatus(View view, List<LookupItem> statusList) {
+        ChipGroup chips = view.findViewById(R.id.chip_group_status);
+        if (chips == null || statusList == null) return;
+
+        // Remove chips dinâmicos de uma execução anterior, mantendo o "Todas".
+        for (int i = chips.getChildCount() - 1; i >= 0; i--) {
+            View child = chips.getChildAt(i);
+            if (child.getId() != R.id.chip_todas) chips.removeViewAt(i);
+        }
+
+        for (LookupItem item : statusList) {
+            String nome = item.getLabel();
+            if (nome == null || nome.isEmpty()) continue;
+            Chip chip = (Chip) getLayoutInflater()
+                    .inflate(R.layout.item_chip_filtro_status, chips, false);
+            chip.setId(View.generateViewId());
+            chip.setText(nome);
+            chip.setTag(nome);
+            chips.addView(chip);
+        }
     }
 
     private void aplicarFiltro(@Nullable String status) {
