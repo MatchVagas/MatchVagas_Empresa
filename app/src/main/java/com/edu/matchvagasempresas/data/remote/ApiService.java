@@ -4,6 +4,7 @@ import com.edu.matchvagasempresas.data.remote.dto.AuthResponse;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.EmpresaRequest;
 import com.edu.matchvagasempresas.data.remote.dto.EmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.HistoricoStatusResponse;
 import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.data.remote.dto.RegisterEmpresaRequest;
 import com.edu.matchvagasempresas.data.remote.dto.VagaRequest;
@@ -34,8 +35,12 @@ public interface ApiService {
     @POST("api/auth/register")
     Call<JsonObject> register(@Body JsonObject body);
 
+    // Responde sem token: o login só é liberado depois de confirmar o e-mail.
     @POST("api/auth/register-empresa")
     Call<AuthResponse> registerEmpresa(@Body RegisterEmpresaRequest request);
+
+    @POST("api/auth/reenviar-verificacao")
+    Call<Void> reenviarVerificacao(@Body JsonObject body);
 
     @POST("api/auth/esqueceu-senha")
     Call<Void> esqueceuSenha(@Body JsonObject body);
@@ -94,6 +99,9 @@ public interface ApiService {
             @Path("id") Long candidaturaId,
             @Path("statusId") Long statusId);
 
+    @GET("api/candidaturas/{id}/empresa/historico")
+    Call<List<HistoricoStatusResponse>> historicoStatusCandidatura(@Path("id") Long candidaturaId);
+
     // ── Lookups (públicos) ────────────────────────────────────────────────────
 
     @GET("api/lookup/vagas/tipos")
@@ -113,6 +121,9 @@ public interface ApiService {
 
     @GET("api/lookup/vagas/status")
     Call<List<LookupItem>> listarStatusVaga();
+
+    @GET("api/lookup/sistema/status-candidatura")
+    Call<List<LookupItem>> listarStatusCandidatura();
 
     @GET("api/localizacao/cidades")
     Call<List<LookupItem>> listarCidades();

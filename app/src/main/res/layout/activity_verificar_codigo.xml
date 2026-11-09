@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="?attr/colorSurface"
     android:fillViewport="true">
 
     <LinearLayout
@@ -25,7 +25,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 app:cardCornerRadius="40dp"
-                app:cardBackgroundColor="@color/primary"
+                app:cardBackgroundColor="?attr/colorPrimary"
                 app:cardElevation="4dp"
                 android:layout_marginBottom="16dp">
 
@@ -33,6 +33,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_business"
+                    android:tint="?attr/colorOnPrimary"
                     android:scaleType="centerInside"
                     android:padding="16dp"
                     android:contentDescription="@string/app_name" />
@@ -44,7 +45,7 @@
                 android:text="@string/app_name"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:layout_marginBottom="4dp" />
 
             <TextView
@@ -52,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/login_subtitle"
                 android:textSize="13sp"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center" />
         </LinearLayout>
 
@@ -61,7 +62,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp"
-            app:cardBackgroundColor="@color/surface"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
             android:layout_marginBottom="20dp">
 
             <LinearLayout
@@ -76,7 +77,7 @@
                     android:text="@string/title_verificar_codigo"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="8dp" />
 
                 <TextView
@@ -85,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/desc_verificar_codigo"
                     android:textSize="13sp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="20dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -133,7 +134,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="10dp"
-                            app:indicatorColor="@color/design_default_color_primary"
+                            app:indicatorColor="?attr/colorOnPrimary"
                             app:trackThickness="3dp"
                             app:indicatorSize="22dp" />
 
@@ -141,7 +142,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/loading_verificando"
-                            android:textColor="@android:color/white"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -154,7 +155,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/voltar_ao_login"
-            android:textColor="@color/primary"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
             android:textSize="14sp"
             android:padding="4dp"

@@ -1,6 +1,8 @@
 package com.edu.matchvagasempresas.domain.repository;
 
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.HistoricoStatusResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 
 import java.util.List;
 
@@ -16,6 +18,10 @@ public interface CandidaturaRepository {
 
     void atualizarStatus(long candidaturaId, long statusId,
                          Callback<CandidaturaEmpresaResponse> callback);
+
+    void listarStatusCandidatura(Callback<List<LookupItem>> callback);
+
+    void listarHistoricoStatus(long candidaturaId, Callback<List<HistoricoStatusResponse>> callback);
 
     void saveCandidaturas(long vagaId, List<CandidaturaEmpresaResponse> lista);
 

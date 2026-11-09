@@ -81,18 +81,16 @@
     <string name="title_detalhes_candidatura">Detalhes da Candidatura</string>
     <string name="filter_todas">Todas</string>
     <string name="filter_pendente">Pendente</string>
-    <string name="filter_em_analise">Em Análise</string>
-    <string name="filter_aprovado">Aprovado</string>
-    <string name="filter_reprovado">Reprovado</string>
-    <string name="filter_em_entrevista">Em Entrevista</string>
-    <string name="filter_proposta_enviada">Proposta Enviada</string>
-    <string name="filter_contratado">Contratado</string>
-    <string name="filter_desistiu">Desistiu</string>
     <string name="label_candidato">Candidato</string>
     <string name="label_data_candidatura">Data da candidatura</string>
     <string name="label_status_atual">Status atual</string>
     <string name="label_alterar_status">Novo status</string>
     <string name="btn_salvar_status">Salvar Status</string>
+    <string name="label_historico_status">Histórico de status</string>
+    <string name="historico_status_vazio">Nenhuma alteração de status registrada ainda.</string>
+    <string name="status_inalterado">A candidatura já está com esse status.</string>
+    <string name="status_final_aviso">Status final — a candidatura não pode ser reaberta.</string>
+    <string name="status_transicao_invalida">Não é possível mudar para esse status a partir do status atual.</string>
     <string name="nenhuma_candidatura">Nenhuma candidatura encontrada</string>
     <string name="label_vaga_ref">Vaga</string>
     <string name="label_contato">Contato</string>
@@ -100,21 +98,28 @@
 
     <!-- Gerenciar Vaga -->
     <string name="title_gerenciar_vaga">Gerenciar Vaga</string>
+    <string name="label_detalhes_vaga">Detalhes da Vaga</string>
     <string name="label_status_vaga">Status da Vaga</string>
     <string name="label_vaga_ativa">Vaga ativa</string>
-    <string name="label_programar_publicacao">Programar Publicação</string>
-    <string name="label_data_publicacao">Data de publicação</string>
-    <string name="label_hora_publicacao">Hora de publicação</string>
-    <string name="btn_salvar_programacao">Salvar Programação</string>
+    <string name="label_data_expiracao_edit">Data de Expiração</string>
+    <string name="label_desc_expiracao">Defina a data em que esta vaga expirará automaticamente</string>
+    <string name="label_data_expiracao_hint">Data de expiração</string>
+    <string name="label_hora_expiracao_hint">Hora de expiração</string>
+    <string name="btn_salvar_expiracao">Salvar Expiração</string>
     <string name="btn_deletar_vaga">Deletar Vaga</string>
     <string name="confirm_deletar_titulo">Confirmar exclusão</string>
     <string name="confirm_deletar_msg">Tem certeza que deseja deletar esta vaga? Esta ação não pode ser desfeita.</string>
     <string name="btn_cancelar">Cancelar</string>
     <string name="btn_confirmar">Confirmar</string>
     <string name="label_zona_perigo">Zona de Perigo</string>
-    <string name="label_desc_programar">Defina quando a vaga deve ser publicada automaticamente</string>
     <string name="label_desc_status">Ativar ou desativar a visibilidade desta vaga</string>
     <string name="label_desc_deletar">A vaga e todas as candidaturas serão permanentemente removidas.</string>
+    <string name="label_tipo_label">Tipo</string>
+    <string name="label_modalidade_label">Modalidade</string>
+    <string name="label_local_vaga">Local</string>
+    <string name="label_num_vagas_label">Nº de Vagas</string>
+    <string name="label_publicada_em">Publicada em</string>
+    <string name="label_expira_em">Expira em</string>
 
     <!-- Redefinir Senha -->
     <string name="title_esqueceu_senha">Esqueceu a senha?</string>

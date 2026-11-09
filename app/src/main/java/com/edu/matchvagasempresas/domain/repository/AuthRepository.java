@@ -11,6 +11,8 @@ public interface AuthRepository {
 
     void esqueceuSenha(String email, SimpleCallback callback);
 
+    void reenviarVerificacao(String email, SimpleCallback callback);
+
     void verificarCodigo(String email, String codigo, TokenCallback callback);
 
     void redefinirSenha(String token, String novaSenha, SimpleCallback callback);

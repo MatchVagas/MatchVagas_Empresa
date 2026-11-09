@@ -25,12 +25,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.edu.matchvagasempresas.BuildConfig;
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.core.utils.FluxoStatusCandidatura;
 import com.edu.matchvagasempresas.data.local.SessionManager;
-import com.edu.matchvagasempresas.data.remote.RetrofitClient;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.ExperienciaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.FormacaoResponse;
+import com.edu.matchvagasempresas.data.remote.dto.HistoricoStatusResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
@@ -39,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,20 +53,18 @@ import okhttp3.Request;
 
 public class DetalhesCandidaturaFragment extends Fragment {
 
-    private static final Map<String, Long> STATUS_MAP = new LinkedHashMap<>();
-    static {
-        STATUS_MAP.put("Em análise",       1L);
-        STATUS_MAP.put("Aprovado",         2L);
-        STATUS_MAP.put("Reprovado",        3L);
-        STATUS_MAP.put("Em entrevista",    4L);
-        STATUS_MAP.put("Proposta Enviada", 5L);
-        STATUS_MAP.put("Contratado",       6L);
-        STATUS_MAP.put("Desistiu",         7L);
-    }
+    // Mapa label -> id preenchido dinamicamente a partir do lookup da API
+    // (GET /api/lookup/sistema/status-candidatura). Não chumbar valores aqui:
+    // os status válidos são definidos no backend e podem mudar.
+    private final Map<String, Long> statusMap = new LinkedHashMap<>();
+    // Opções cruas do lookup; o dropdown é filtrado pelo fluxo conforme o status atual.
+    private List<LookupItem> statusOpcoesRaw;
 
     private DetalhesCandidaturaViewModel viewModel;
     private CandidaturaEmpresaResponse candidaturaAtual;
     private AutoCompleteTextView actvStatus;
+    private com.google.android.material.textfield.TextInputLayout tilStatus;
+    private MaterialButton btnSalvarStatus;
     private MaterialButton btnVerCurriculo;
     private SwipeRefreshLayout swipeRefresh;
     private long candidaturaId = -1;
@@ -87,21 +87,24 @@ public class DetalhesCandidaturaFragment extends Fragment {
         toolbar.setNavigationOnClickListener(v -> Navigation.findNavController(v).navigateUp());
 
         actvStatus = view.findViewById(R.id.actv_novo_status);
-        List<String> labels = Arrays.asList(STATUS_MAP.keySet().toArray(new String[0]));
-        actvStatus.setAdapter(new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, labels));
+        tilStatus = view.findViewById(R.id.til_novo_status);
 
         btnVerCurriculo = view.findViewById(R.id.btn_ver_curriculo);
         btnVerCurriculo.setEnabled(false);
         btnVerCurriculo.setOnClickListener(v -> baixarCurriculo());
 
-        view.findViewById(R.id.btn_salvar_status).setOnClickListener(v -> salvarStatus(v));
+        btnSalvarStatus = view.findViewById(R.id.btn_salvar_status);
+        btnSalvarStatus.setOnClickListener(this::salvarStatus);
 
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.primary, R.color.accent);
         swipeRefresh.setOnRefreshListener(() -> {
-            if (candidaturaId > 0) viewModel.carregarCandidatura(candidaturaId);
-            else swipeRefresh.setRefreshing(false);
+            if (candidaturaId > 0) {
+                viewModel.carregarCandidatura(candidaturaId);
+                viewModel.carregarHistorico(candidaturaId);
+            } else {
+                swipeRefresh.setRefreshing(false);
+            }
         });
 
         viewModel.getCandidatura().observe(getViewLifecycleOwner(), resource -> {
@@ -129,6 +132,8 @@ public class DetalhesCandidaturaFragment extends Fragment {
                         candidaturaAtual = resource.getData();
                         TextView tvStatus = view.findViewById(R.id.tv_status_atual);
                         if (tvStatus != null) tvStatus.setText(candidaturaAtual.status);
+                        // Novo status → recalcula transições válidas no dropdown.
+                        atualizarDropdownStatus();
                         Toast.makeText(requireContext(), "Status atualizado!", Toast.LENGTH_SHORT).show();
                     }
                     break;
@@ -139,8 +144,119 @@ public class DetalhesCandidaturaFragment extends Fragment {
             }
         });
 
+        viewModel.getStatusOpcoes().observe(getViewLifecycleOwner(), resource -> {
+            switch (resource.getStatus()) {
+                case SUCCESS:
+                    if (resource.getData() != null) preencherStatusOpcoes(resource.getData());
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(),
+                            "Não foi possível carregar os status: " + resource.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    break;
+                default: break;
+            }
+        });
+
+        viewModel.getHistorico().observe(getViewLifecycleOwner(), resource -> {
+            switch (resource.getStatus()) {
+                case SUCCESS:
+                    preencherHistorico(view, resource.getData());
+                    break;
+                case ERROR:
+                    Toast.makeText(requireContext(),
+                            "Não foi possível carregar o histórico: " + resource.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    break;
+                default: break;
+            }
+        });
+
         candidaturaId = getArguments() != null ? getArguments().getLong("candidaturaId", -1) : -1;
-        if (candidaturaId > 0) viewModel.carregarCandidatura(candidaturaId);
+        if (candidaturaId > 0) {
+            viewModel.carregarCandidatura(candidaturaId);
+            viewModel.carregarHistorico(candidaturaId);
+        }
+        viewModel.carregarStatusOpcoes();
+    }
+
+    private void preencherHistorico(View view, List<HistoricoStatusResponse> lista) {
+        android.widget.LinearLayout container = view.findViewById(R.id.container_historico);
+        TextView tvVazio = view.findViewById(R.id.tv_historico_vazio);
+        if (container == null) return;
+        container.removeAllViews();
+
+        if (lista == null || lista.isEmpty()) {
+            if (tvVazio != null) tvVazio.setVisibility(View.VISIBLE);
+            return;
+        }
+        if (tvVazio != null) tvVazio.setVisibility(View.GONE);
+
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        for (int i = 0; i < lista.size(); i++) {
+            HistoricoStatusResponse h = lista.get(i);
+            if (h == null) continue;
+            View item = inflater.inflate(R.layout.item_historico_status, container, false);
+
+            String transicao = (h.statusAnterior != null ? h.statusAnterior : "—")
+                    + "  →  " + (h.statusNovo != null ? h.statusNovo : "—");
+            ((TextView) item.findViewById(R.id.tv_historico_transicao)).setText(transicao);
+
+            StringBuilder meta = new StringBuilder();
+            if (h.usuarioNome != null && !h.usuarioNome.isEmpty()) meta.append("por ").append(h.usuarioNome);
+            String quando = formatDateTime(h.dataHora);
+            if (!quando.isEmpty()) {
+                if (meta.length() > 0) meta.append(" • ");
+                meta.append(quando);
+            }
+            ((TextView) item.findViewById(R.id.tv_historico_meta)).setText(meta.toString());
+
+            // Esconde o divisor do último item.
+            View divider = item.findViewById(R.id.view_historico_divider);
+            if (divider != null) divider.setVisibility(i == lista.size() - 1 ? View.GONE : View.VISIBLE);
+
+            container.addView(item);
+        }
+    }
+
+    private void preencherStatusOpcoes(List<LookupItem> opcoes) {
+        statusOpcoesRaw = opcoes;
+        atualizarDropdownStatus();
+    }
+
+    /**
+     * Rebuild do dropdown a partir das opções do lookup, filtrando pelas transições
+     * permitidas pelo fluxo (espelha a regra do backend). Em status terminal a edição
+     * é desabilitada. Chamado quando as opções e/ou a candidatura terminam de carregar.
+     */
+    private void atualizarDropdownStatus() {
+        if (actvStatus == null || statusOpcoesRaw == null) return;
+
+        String statusAtual = candidaturaAtual != null ? candidaturaAtual.status : null;
+
+        statusMap.clear();
+        List<String> labels = new java.util.ArrayList<>();
+        for (LookupItem item : statusOpcoesRaw) {
+            if (item == null || item.id == null) continue;
+            String label = item.getLabel();
+            if (label == null || label.isEmpty()) continue;
+            if (!FluxoStatusCandidatura.transicaoPermitida(statusAtual, label)) continue;
+            statusMap.put(label, item.id);
+            labels.add(label);
+        }
+
+        actvStatus.setAdapter(new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_dropdown_item_1line, labels));
+        if (statusAtual != null) actvStatus.setText(statusAtual, false);
+
+        // Status terminal (Aprovado/Reprovado): sem transições possíveis → bloqueia edição.
+        FluxoStatusCandidatura atual = FluxoStatusCandidatura.fromNome(statusAtual);
+        boolean terminal = atual != null && atual.ehTerminal();
+        if (tilStatus != null) {
+            tilStatus.setEnabled(!terminal);
+            tilStatus.setHelperText(terminal ? getString(R.string.status_final_aviso) : null);
+        }
+        if (btnSalvarStatus != null) btnSalvarStatus.setEnabled(!terminal);
     }
 
     private void preencherDados(View view, CandidaturaEmpresaResponse c) {
@@ -159,7 +275,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
         setText(view, R.id.tv_data_candidatura, "Candidatou-se em " + formatDate(c.dataCandidatura));
         setText(view, R.id.tv_titulo_vaga,       c.tituloVaga);
         setText(view, R.id.tv_status_atual,      c.status);
-        setText(view, R.id.tv_email_candidato,   "");
+        setText(view, R.id.tv_email_candidato,   c.email);
 
         if (c.telefones != null && !c.telefones.isEmpty())
             setText(view, R.id.tv_telefone_candidato, String.join(" • ", c.telefones));
@@ -174,7 +290,8 @@ public class DetalhesCandidaturaFragment extends Fragment {
         setInfoCompartilhadaLista(view, R.id.tv_escolaridade,  formatarFormacoes(c.formacoes));
         setInfoCompartilhadaLista(view, R.id.tv_area_formacao, formatarAreaFormacao(c.formacoes));
 
-        if (c.status != null && actvStatus != null) actvStatus.setText(c.status, false);
+        // Agora que o status atual é conhecido, refiltra o dropdown pelo fluxo.
+        atualizarDropdownStatus();
 
         Log.d("Curriculo", "nomeArquivo=" + c.curriculoNomeArquivo + "  caminho=" + c.curriculoCaminho);
         boolean temCurriculo = c.curriculoNomeArquivo != null;
@@ -203,7 +320,7 @@ public class DetalhesCandidaturaFragment extends Fragment {
         showLoading("Obtendo currículo…");
 
         String token = new SessionManager(requireContext()).getToken();
-        String url = RetrofitClient.BASE_URL + "/api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
+        String url = BuildConfig.BASE_URL + "api/candidaturas/" + candidaturaAtual.id + "/curriculo/download";
 
         OkHttpClient client = new OkHttpClient.Builder().followRedirects(false).build();
         Request request = new Request.Builder()
@@ -314,9 +431,19 @@ public class DetalhesCandidaturaFragment extends Fragment {
     private void salvarStatus(View btn) {
         if (candidaturaAtual == null) return;
         String label = actvStatus != null ? actvStatus.getText().toString().trim() : "";
-        Long statusId = STATUS_MAP.get(label);
+        Long statusId = statusMap.get(label);
         if (statusId == null) {
             showErroDialog("Selecione um status válido antes de salvar.");
+            return;
+        }
+        // Guard de no-op (espelha a regra do backend): status igual ao atual não faz nada.
+        if (candidaturaAtual.status != null && candidaturaAtual.status.equalsIgnoreCase(label)) {
+            Toast.makeText(requireContext(), R.string.status_inalterado, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Guard de transição (espelha o fluxo do backend) — defesa em profundidade.
+        if (!FluxoStatusCandidatura.transicaoPermitida(candidaturaAtual.status, label)) {
+            showErroDialog(getString(R.string.status_transicao_invalida));
             return;
         }
         btn.setEnabled(false);
@@ -437,6 +564,16 @@ public class DetalhesCandidaturaFragment extends Fragment {
         if (iso == null || iso.length() < 10) return "";
         String[] p = iso.substring(0, 10).split("-");
         return p.length == 3 ? p[2] + "/" + p[1] + "/" + p[0] : iso;
+    }
+
+    // Formata ISO LocalDateTime ("2026-06-13T17:29:06") como "13/06/2026 às 17:29".
+    private String formatDateTime(String iso) {
+        if (iso == null || iso.length() < 10) return "";
+        String data = formatDate(iso);
+        int t = iso.indexOf('T');
+        if (t < 0 || iso.length() < t + 6) return data;
+        String hora = iso.substring(t + 1, t + 6); // HH:mm
+        return data + " às " + hora;
     }
 
     private String buildErroConexao(Throwable t) {

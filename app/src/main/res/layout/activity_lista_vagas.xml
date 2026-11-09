@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/surface"
+            app:boxBackgroundColor="?attr/colorSurfaceContainerLow"
             android:hint="@string/pesquisar_vagas">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -67,14 +67,14 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:src="@drawable/ic_list"
-            android:tint="@color/text_hint"
+            android:tint="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="16dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/nenhuma_vaga"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="16sp"
             android:textStyle="bold"
             android:gravity="center" />
@@ -83,7 +83,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cadastre uma nova vaga pelo botão +"
-            android:textColor="@color/text_hint"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp"
             android:gravity="center"
             android:layout_marginTop="4dp" />
@@ -96,10 +96,10 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:contentDescription="@string/title_cadastro_vaga"
-        android:textColor="@color/background"
-        app:backgroundTint="@color/primary_dark"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:icon="@drawable/ic_add"
-        app:iconTint="@color/background"
+        app:iconTint="?attr/colorOnPrimary"
         app:srcCompat="@drawable/ic_add"
         tools:text="@string/title_cadastro_vaga" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -11,6 +11,8 @@ import com.edu.matchvagasempresas.data.local.entity.CandidaturaEntity;
 import com.edu.matchvagasempresas.data.remote.ApiService;
 import com.edu.matchvagasempresas.data.remote.RetrofitClient;
 import com.edu.matchvagasempresas.data.remote.dto.CandidaturaEmpresaResponse;
+import com.edu.matchvagasempresas.data.remote.dto.HistoricoStatusResponse;
+import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.domain.repository.CandidaturaRepository;
 
 import java.util.List;
@@ -120,6 +122,49 @@ public class CandidaturaRepositoryImpl implements CandidaturaRepository {
                     }
                     @Override
                     public void onFailure(@NonNull Call<CandidaturaEmpresaResponse> call,
+                                          @NonNull Throwable t) {
+                        callback.onError("Erro de conexão: " + t.getMessage());
+                    }
+                });
+    }
+
+    @Override
+    public void listarStatusCandidatura(Callback<List<LookupItem>> callback) {
+        apiService.listarStatusCandidatura()
+                .enqueue(new retrofit2.Callback<List<LookupItem>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<LookupItem>> call,
+                                           @NonNull Response<List<LookupItem>> r) {
+                        if (r.isSuccessful() && r.body() != null) {
+                            callback.onSuccess(r.body());
+                        } else {
+                            callback.onError("Erro ao carregar status de candidatura");
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call<List<LookupItem>> call,
+                                          @NonNull Throwable t) {
+                        callback.onError("Erro de conexão: " + t.getMessage());
+                    }
+                });
+    }
+
+    @Override
+    public void listarHistoricoStatus(long candidaturaId,
+                                      Callback<List<HistoricoStatusResponse>> callback) {
+        apiService.historicoStatusCandidatura(candidaturaId)
+                .enqueue(new retrofit2.Callback<List<HistoricoStatusResponse>>() {
+                    @Override
+                    public void onResponse(@NonNull Call<List<HistoricoStatusResponse>> call,
+                                           @NonNull Response<List<HistoricoStatusResponse>> r) {
+                        if (r.isSuccessful() && r.body() != null) {
+                            callback.onSuccess(r.body());
+                        } else {
+                            callback.onError("Erro ao carregar histórico de status");
+                        }
+                    }
+                    @Override
+                    public void onFailure(@NonNull Call<List<HistoricoStatusResponse>> call,
                                           @NonNull Throwable t) {
                         callback.onError("Erro de conexão: " + t.getMessage());
                     }

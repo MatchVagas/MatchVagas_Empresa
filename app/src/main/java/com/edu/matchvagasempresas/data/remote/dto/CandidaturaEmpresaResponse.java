@@ -10,6 +10,7 @@ public class CandidaturaEmpresaResponse {
     public String status;
     public Long candidatoId;
     public String nomeCandidato;
+    public String email;
     public String objetivoProfissional;
     public String disponibilidade;
     public Double pretensaoSalarial;
