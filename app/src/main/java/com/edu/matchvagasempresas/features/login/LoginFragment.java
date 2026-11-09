@@ -10,11 +10,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavBackStackEntry;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.edu.matchvagasempresas.R;
+import com.edu.matchvagasempresas.core.utils.Resource;
 import com.edu.matchvagasempresas.data.local.SessionManager;
 import com.edu.matchvagasempresas.data.remote.RetrofitClient;
+import com.edu.matchvagasempresas.features.cadastro.empresa.CadastroEmpresaFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -42,6 +47,13 @@ public class LoginFragment extends Fragment {
         TextInputEditText etEmail = view.findViewById(R.id.et_email);
         TextInputEditText etSenha = view.findViewById(R.id.et_senha);
 
+        // Vindo do cadastro: já preenche o e-mail que precisa ser confirmado.
+        NavBackStackEntry entrada = NavHostFragment.findNavController(this).getCurrentBackStackEntry();
+        if (entrada != null) {
+            String emailCadastrado = entrada.getSavedStateHandle().remove(CadastroEmpresaFragment.EMAIL_CADASTRADO);
+            if (emailCadastrado != null) etEmail.setText(emailCadastrado);
+        }
+
         viewModel.getLoginResult().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.getStatus()) {
                 case LOADING:
@@ -63,9 +75,22 @@ public class LoginFragment extends Fragment {
                     break;
                 case ERROR:
                     setLoading(false);
-                    Toast.makeText(requireContext(),
-                            resource.getMessage(), Toast.LENGTH_SHORT).show();
+                    String mensagem = resource.getMessage();
+                    if (mensagem != null && mensagem.toLowerCase().contains("não verificado")) {
+                        oferecerReenvio(getText(etEmail), mensagem);
+                    } else {
+                        Toast.makeText(requireContext(), mensagem, Toast.LENGTH_SHORT).show();
+                    }
                     break;
+            }
+        });
+
+        viewModel.getReenvioResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.getStatus() == Resource.Status.SUCCESS) {
+                Toast.makeText(requireContext(), "Link reenviado para " + resource.getData()
+                        + ". Confira também a caixa de spam.", Toast.LENGTH_LONG).show();
+            } else if (resource.getStatus() == Resource.Status.ERROR) {
+                Toast.makeText(requireContext(), resource.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -84,6 +109,16 @@ public class LoginFragment extends Fragment {
 
         view.findViewById(R.id.tv_esqueceu_senha).setOnClickListener(v ->
                 Navigation.findNavController(v).navigate(R.id.action_login_to_esqueceuSenha));
+    }
+
+    /** Login recusado por e-mail não confirmado: explica e oferece reenviar o link. */
+    private void oferecerReenvio(String email, String mensagem) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Confirme seu e-mail")
+                .setMessage(mensagem)
+                .setPositiveButton("Reenviar link", (dialog, which) -> viewModel.reenviarVerificacao(email))
+                .setNegativeButton("Fechar", null)
+                .show();
     }
 
     private void setLoading(boolean loading) {

@@ -10,6 +10,7 @@ import com.edu.matchvagasempresas.data.remote.dto.AuthResponse;
 import com.edu.matchvagasempresas.data.remote.dto.EmpresaResponse;
 import com.edu.matchvagasempresas.data.remote.dto.RegisterEmpresaRequest;
 import com.edu.matchvagasempresas.domain.repository.AuthRepository;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import retrofit2.Call;
@@ -58,7 +59,8 @@ public class AuthRepositoryImpl implements AuthRepository {
                         }
                     });
                 } else {
-                    callback.onError("E-mail ou senha inválidos");
+                    // O backend explica o motivo (senha errada, e-mail não confirmado, conta inativa).
+                    callback.onError(mensagemDoErro(response, "E-mail ou senha inválidos"));
                 }
             }
 
@@ -76,13 +78,14 @@ public class AuthRepositoryImpl implements AuthRepository {
                     @Override
                     public void onResponse(@NonNull Call<AuthResponse> call,
                                            @NonNull Response<AuthResponse> r) {
-                        if (r.isSuccessful() && r.body() != null) {
+                        if (r.isSuccessful()) {
+                            // Sem token na resposta: a sessão só começa no login, após confirmar o e-mail.
                             callback.onSuccess(r.body());
                         } else {
-                            String msg = r.code() == 400
+                            String padrao = r.code() == 400
                                     ? "Dados inválidos: verifique CNPJ, e-mail ou campos obrigatórios."
                                     : "Erro no cadastro. Tente novamente.";
-                            callback.onError(msg);
+                            callback.onError(mensagemDoErro(r, padrao));
                         }
                     }
 
@@ -102,6 +105,28 @@ public class AuthRepositoryImpl implements AuthRepository {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 callback.onSuccess();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                callback.onError("Erro de conexão: " + t.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void reenviarVerificacao(String email, SimpleCallback callback) {
+        JsonObject body = new JsonObject();
+        body.addProperty("email", email);
+
+        apiService.reenviarVerificacao(body).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess();
+                } else {
+                    callback.onError(mensagemDoErro(response, "Não foi possível reenviar o link. Tente novamente."));
+                }
             }
 
             @Override
@@ -156,5 +181,19 @@ public class AuthRepositoryImpl implements AuthRepository {
                 callback.onError("Erro de conexão: " + t.getMessage());
             }
         });
+    }
+
+    /** Campo "message" do ErrorResponse do backend; o texto padrão se não houver. */
+    private static String mensagemDoErro(Response<?> response, String padrao) {
+        try {
+            if (response.errorBody() == null) return padrao;
+            JsonObject erro = new Gson().fromJson(response.errorBody().string(), JsonObject.class);
+            if (erro != null && erro.has("message") && !erro.get("message").isJsonNull()) {
+                return erro.get("message").getAsString();
+            }
+        } catch (Exception ignored) {
+            // Corpo vazio ou fora do formato esperado: fica o texto padrão.
+        }
+        return padrao;
     }
 }

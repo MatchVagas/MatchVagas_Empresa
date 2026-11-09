@@ -17,6 +17,7 @@ public class LoginViewModel extends AndroidViewModel {
 
     private final AuthRepository authRepository;
     private final MutableLiveData<Resource<LoginResult>> loginResult = new MutableLiveData<>();
+    private final MutableLiveData<Resource<String>> reenvioResult = new MutableLiveData<>();
 
     public LoginViewModel(@NonNull Application application) {
         super(application);
@@ -24,6 +25,23 @@ public class LoginViewModel extends AndroidViewModel {
     }
 
     public LiveData<Resource<LoginResult>> getLoginResult() { return loginResult; }
+
+    public LiveData<Resource<String>> getReenvioResult() { return reenvioResult; }
+
+    /** Reenvia o link de confirmação de e-mail (o login fica bloqueado até a confirmação). */
+    public void reenviarVerificacao(String email) {
+        reenvioResult.setValue(Resource.loading());
+        authRepository.reenviarVerificacao(email, new AuthRepository.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                reenvioResult.setValue(Resource.success(email));
+            }
+            @Override
+            public void onError(String message) {
+                reenvioResult.setValue(Resource.error(message));
+            }
+        });
+    }
 
     public void login(String email, String senha) {
         loginResult.setValue(Resource.loading());

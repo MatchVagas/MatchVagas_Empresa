@@ -16,6 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavBackStackEntry;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.edu.matchvagasempresas.R;
@@ -25,6 +27,7 @@ import com.edu.matchvagasempresas.data.remote.dto.LookupItem;
 import com.edu.matchvagasempresas.data.remote.dto.RegisterEmpresaRequest;
 import com.edu.matchvagasempresas.data.repository.LookupRepositoryImpl;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
@@ -34,8 +37,12 @@ import java.util.Locale;
 
 public class CadastroEmpresaFragment extends Fragment {
 
+    /** Chave usada para devolver o e-mail cadastrado à tela de login. */
+    public static final String EMAIL_CADASTRADO = "email_cadastrado";
+
     private CadastroEmpresaViewModel viewModel;
     private AutoCompleteTextView actvPorte, actvRamo;
+    private String emailCadastrado;
 
     @Nullable
     @Override
@@ -66,15 +73,8 @@ public class CadastroEmpresaFragment extends Fragment {
                     view.findViewById(R.id.btn_cadastrar).setEnabled(false);
                     break;
                 case SUCCESS:
-                    if (resource.getData() != null) {
-                        SessionManager session = new SessionManager(requireContext());
-                        session.saveAuth(resource.getData().token, resource.getData().usuarioId);
-                        session.saveEmpresa(null,
-                                view.findViewById(R.id.et_nome_fantasia) instanceof TextInputEditText
-                                        ? getText(view, R.id.et_nome_fantasia) : "", "PENDENTE");
-                        RetrofitClient.reset();
-                    }
-                    Navigation.findNavController(view).navigate(R.id.action_cadastroEmpresa_to_dashboard);
+                    // Sem token: a conta só entra depois de confirmar o e-mail.
+                    mostrarConfirmacaoDeEmail(view);
                     break;
                 case ERROR:
                     view.findViewById(R.id.btn_cadastrar).setEnabled(true);
@@ -143,8 +143,9 @@ public class CadastroEmpresaFragment extends Fragment {
             return;
         }
 
+        // Opcional: sem data informada, vai nula (o backend não exige a do responsável).
         String isoData = parseIsoDate(dataNasc);
-        if (isoData == null) isoData = "1990-01-01T00:00:00";
+        emailCadastrado = email;
 
         new SessionManager(requireContext()).clear();
         RetrofitClient.reset();
@@ -155,6 +156,21 @@ public class CadastroEmpresaFragment extends Fragment {
                 descricao.isEmpty() ? null : descricao,
                 porteId, ramoId,
                 site.isEmpty() ? null : site));
+    }
+
+    private void mostrarConfirmacaoDeEmail(View view) {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Confirme seu e-mail")
+                .setMessage("Enviamos um link de confirmação para " + emailCadastrado
+                        + ". Abra o link e depois entre com seu e-mail e senha.")
+                .setCancelable(false)
+                .setPositiveButton("Ir para o login", (dialog, which) -> {
+                    NavController nav = Navigation.findNavController(view);
+                    NavBackStackEntry login = nav.getPreviousBackStackEntry();
+                    if (login != null) login.getSavedStateHandle().set(EMAIL_CADASTRADO, emailCadastrado);
+                    nav.navigateUp();
+                })
+                .show();
     }
 
     private void setupDatePicker(View view) {

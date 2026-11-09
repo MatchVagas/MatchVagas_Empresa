@@ -35,8 +35,12 @@ public interface ApiService {
     @POST("api/auth/register")
     Call<JsonObject> register(@Body JsonObject body);
 
+    // Responde sem token: o login só é liberado depois de confirmar o e-mail.
     @POST("api/auth/register-empresa")
     Call<AuthResponse> registerEmpresa(@Body RegisterEmpresaRequest request);
+
+    @POST("api/auth/reenviar-verificacao")
+    Call<Void> reenviarVerificacao(@Body JsonObject body);
 
     @POST("api/auth/esqueceu-senha")
     Call<Void> esqueceuSenha(@Body JsonObject body);
